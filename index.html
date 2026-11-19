@@ -854,4 +854,525 @@ Object.assign(C,{
 
 const boot=document.createElement('div');boot.id='boot';boot.innerHTML='<span class=brand style="font-size:56px">Noxy</span>';document.body.append(boot);setTimeout(()=>boot.remove(),1700);
 dbInit().catch(()=>{}).then(async()=>{let OB=null;try{OB=await oauthBack()}catch(e){alert(e.message)}ti=Math.max(0,themes.indexOf(LS.g('theme','dark')));setTheme();const u=U();OB?onboard(OB):u&&rec(u)?enter():auth()});
+ /* ===== NOXY v4: Luau Studio, OSINT, Sherlock, Leaderboard, Groq Keys ===== */
+document.head.insertAdjacentHTML('beforeend',`<style>
+.os{display:flex;flex-direction:column;height:100%;min-height:0}
+.ostabs{display:flex;gap:6px;overflow-x:auto;padding:10px 12px;border-bottom:1px solid var(--bd);flex:none}
+.ostabs button{padding:7px 13px;border-radius:99px;border:1px solid var(--bd);color:var(--mut);white-space:nowrap;font-size:13px}
+.ostabs .on{background:var(--ac);border-color:var(--ac);color:#fff}
+.osb{flex:1;overflow:auto;padding:14px}.osrow{display:flex;gap:8px;margin-bottom:10px}
+.kv{display:grid;grid-template-columns:minmax(90px,auto) 1fr;gap:7px 14px;font-size:13px;align-items:start}
+.kv b{color:var(--mut);font-weight:500}.kv span{word-break:break-word}
+.sec2{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--mut);margin:16px 0 8px}
+.lsp{display:flex;flex-direction:column;height:100%;min-height:0}
+.lsbar{display:flex;gap:8px;align-items:center;padding:10px 12px;border-bottom:1px solid var(--bd);flex-wrap:wrap;flex:none}
+.lsbar select{width:auto;margin:0;padding:8px 10px;border-radius:10px;font-size:13px}
+.lsbar button{padding:8px 13px;border-radius:10px;font-size:13px;border:1px solid var(--bd);background:var(--bg3);color:var(--mut)}
+.lsrun{background:var(--ac)!important;border-color:var(--ac)!important;color:#fff!important;font-weight:600}
+.lsstat{margin-left:auto;font-size:12px;color:var(--mut)}
+.lstabs{display:none;gap:6px;padding:8px 12px 0}
+.lstabs button{flex:1;padding:9px;border-radius:10px;background:var(--bg3);border:1px solid var(--bd);color:var(--mut);font-size:13px}
+.lstabs .on{background:var(--ac);border-color:var(--ac);color:#fff}
+.lsbody{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px 12px 12px}
+.lscol{display:flex;flex-direction:column;min-height:0;min-width:0;gap:8px}
+.lscode{flex:1;min-height:0;font:12.5px/1.6 var(--m);white-space:pre;overflow:auto;resize:none;tab-size:2;padding:12px;border-radius:12px;background:#0b0a0c}
+.lsview{flex:1;min-height:0;position:relative;border:1px solid var(--bd);border-radius:12px;overflow:hidden;background:linear-gradient(160deg,#1b2330,#0e1218)}
+.lsvp{position:absolute;inset:0;overflow:hidden}.lstag{position:absolute;left:8px;bottom:6px;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#ffffff55;pointer-events:none}
+.lscon{height:150px;flex:none;overflow:auto;background:#000;border:1px solid var(--bd);border-radius:12px;padding:8px 10px;font:12px/1.55 var(--m);color:#c9c2c4}
+.lsl{white-space:pre-wrap;word-break:break-word;border-bottom:1px solid #ffffff0a}
+.lsl.e{color:#ff6b74}.lsl.w{color:#ffc35b}.lsl.m{color:#8f7bff}.lsl.i{color:#7fd7a3}
+.lso{position:absolute;box-sizing:border-box;display:flex;overflow:hidden;font-family:Inter,system-ui,sans-serif}
+.lssg{position:absolute;inset:0}
+.rk{display:flex;align-items:center;gap:12px;padding:10px 12px;border:1px solid var(--bd);border-radius:14px;background:var(--bg2);margin-bottom:8px}
+.rk .n{width:30px;text-align:center;font-weight:700;color:var(--mut)}
+.rk.me{border-color:var(--ac2);background:color-mix(in srgb,var(--ac) 12%,var(--bg2))}
+.rk div{flex:1;min-width:0}.rk small{color:var(--mut);display:block}
+@media(max-width:859px){.lstabs{display:flex}.lsbody{grid-template-columns:1fr}.lsp:not(.m-vis) .lc2{display:none}.lsp.m-vis .lc1{display:none}.lscon{height:120px}}
+</style>`);
+
+/* ---------- utilidades OSINT ---------- */
+const PX=[u=>u,u=>'https://api.allorigins.win/raw?url='+encodeURIComponent(u),u=>'https://corsproxy.io/?url='+encodeURIComponent(u),u=>'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(u)];
+const gj=async u=>{let e='';for(const p of PX){try{const r=await fetch(p(u));if(r.ok)return r.json();e='HTTP '+r.status}catch(x){e=x.message}}throw Error('sin respuesta ('+e+')')};
+const gt=async u=>{let e='';for(const p of PX){try{const r=await fetch(p(u));if(r.ok)return r.text();e='HTTP '+r.status}catch(x){e=x.message}}throw Error('sin respuesta ('+e+')')};
+const md5=s=>{const r=(a,b)=>(a<<b)|(a>>>(32-b)),K=[],S=[7,12,17,22,5,9,14,20,4,11,16,23,6,10,15,21],M=new TextEncoder().encode(s),L=M.length*8,B=new Uint8Array(((L+64)>>>9<<4)+64);B.set(M);B[M.length]=128;new DataView(B.buffer).setUint32(B.length-8,L,1);
+ for(let i=0;i<64;i++)K[i]=Math.floor(Math.abs(Math.sin(i+1))*4294967296);let a0=1732584193,b0=-271733879,c0=-1732584194,d0=271733878;
+ for(let i=0;i<B.length;i+=64){const w=[];for(let j=0;j<16;j++)w[j]=B[i+j*4]|B[i+j*4+1]<<8|B[i+j*4+2]<<16|B[i+j*4+3]<<24;let A=a0,C=b0,D=c0,E=d0;
+  for(let j=0;j<64;j++){let f,g;if(j<16){f=(C&D)|(~C&E);g=j}else if(j<32){f=(E&C)|(~E&D);g=(5*j+1)%16}else if(j<48){f=C^D^E;g=(3*j+5)%16}else{f=D^(C|~E);g=(7*j)%16}
+   const t=E;E=D;D=C;C=C+r(A+f+K[j]+w[g],S[j]);A=t}const q=[A,C,D,E];[a0,b0,c0,d0]=[a0+r(q[0],0),b0+r(q[1],0),c0+r(q[2],0),d0+r(q[3],0)]}
+ return[a0,b0,c0,d0].map(x=>[...new Uint8Array(new Uint32Array([x]).buffer)].map(b=>b.toString(16).padStart(2,'0')).join('')).join('')};
+const XP=()=>LS.g('xp_'+(U()||'guest'),0);let _xt;
+const addXP=n=>{const k='xp_'+(U()||'guest'),v=XP()+n;LS.s(k,v);const u=U();if(u&&RM()){clearTimeout(_xt);_xt=setTimeout(()=>{const r=rec(u);if(r){r.xp=v;put(u,r);rSet(u,r).catch(()=>{})}},1500)}return v};
+const kv=a=>`<div class=kv>${a.map(([k,v])=>`<b>${esc(k)}</b><span>${v==null||v===''?'—':esc(v)}</span>`).join('')}</div>`;
+const shot=(el,extra)=>{if(U()){const n=addXP(extra||1);const b=$('.xpb',el);if(b)b.textContent='+'+n+' XP'}};
+
+/* ---------- OSINT ---------- */
+function osint(el){
+ const T={ip:'IP',dom:'Dominio',mail:'Email',user:'Usuario',tel:'Teléfono',coin:'Cripto',dork:'Dorks'};
+ el.innerHTML=`<div class=os><div class=ostabs>${Object.entries(T).map(([k,t],i)=>`<button class="${i?'':'on'}" data-k="${k}">${t}</button>`).join('')}</div><div class=osb id=ob></div></div>`;
+ const ob=$('#ob',el);let tab='ip';
+ const draw=()=>{$$('.ostabs button',el).forEach(b=>b.classList.toggle('on',b.dataset.k==tab));
+  ob.innerHTML=`
+  ${tab=='ip'?`<p class=sub>Geolocalización, ASN, puertos abiertos y CVEs públicos de una IP.</p><div class=osrow><input id=q placeholder="8.8.8.8 o dominio" autocapitalize=none><button class=pb id=go>Analizar</button></div><div id=o></div>`:''}
+  ${tab=='dom'?`<p class=sub>WHOIS/RDAP, registros DNS, certificados y subdominios.</p><div class=osrow><input id=q placeholder="ejemplo.com" autocapitalize=none><button class=pb id=go>Analizar</button></div><div id=o></div>`:''}
+  ${tab=='mail'?`<p class=sub>Perfil de Gravatar, validación y servidores de correo del dominio.</p><div class=osrow><input id=q placeholder="correo@dominio.com" autocapitalize=none><button class=pb id=go>Analizar</button></div><div id=o></div>`:''}
+  ${tab=='user'?`<p class=sub>Perfil público en varias plataformas. Para barrido completo usa la app Sherlock.</p><div class=osrow><input id=q placeholder="usuario" autocapitalize=none><button class=pb id=go>Buscar</button></div><div id=o></div>`:''}
+  ${tab=='tel'?`<p class=sub>Valida y descompone un número con libphonenumber (offline).</p><div class=osrow><input id=q placeholder="+34 600 000 000" autocapitalize=none><button class=pb id=go>Analizar</button></div><div id=o></div>`:''}
+  ${tab=='coin'?`<p class=sub>Balance y movimientos públicos de una dirección BTC o ETH.</p><div class=osrow><input id=q placeholder="dirección" autocapitalize=none><button class=pb id=go>Analizar</button></div><div id=o></div>`:''}
+  ${tab=='dork'?`<p class=sub>Genera dorks de Google/GitHub/Shodan para un objetivo.</p><div class=osrow><input id=q placeholder="dominio, usuario o correo" autocapitalize=none><button class=pb id=go>Generar</button></div><div id=o></div>`:''}`;
+  $('#go',ob).onclick=run;$('#q',ob).onkeydown=e=>{if(e.key=='Enter')run()}};
+ const R=()=>$('#o',ob),B=async f=>{const o=R();o.innerHTML='<p class=sub>Consultando…</p>';try{await f(o)}catch(e){o.innerHTML=`<div class=iss style="border-left:3px solid #ff3b46">${esc(e.message)}</div>`}};
+ async function run(){const q=$('#q',ob).value.trim();if(!q)return;
+  if(tab=='ip')B(async o=>{const ip=/^\d+\.\d+\.\d+\.\d+$/.test(q)?q:(await gj('https://dns.google/resolve?name='+encodeURIComponent(q)+'&type=A')).Answer?.[0]?.data;
+   if(!ip)throw Error('No pude resolver ese dominio a una IP.');
+   const g=await gj('https://ipwho.is/'+ip);if(g.success===false)throw Error('IP inválida o reservada.');
+   let sh={},bg={},ptr='';[sh,bg,ptr]=await Promise.all([gj('https://internetdb.shodan.io/'+ip).catch(()=>({})),gj('https://api.bgpview.io/ip/'+ip).catch(()=>({})),gj('https://dns.google/resolve?name='+ip+'&type=PTR').then(j=>j.Answer?.[0]?.data||'').catch(()=>'')]);
+   const pre=bg.data?.prefixes?.[0]||{},as=bg.data?.ripe_org_hdl||'';
+   o.innerHTML=kv([['IP',ip],['Hostname',ptr],['País',[g.country,g.region,g.city].filter(Boolean).join(', ')],['Coordenadas',g.latitude+', '+g.longitude],['Zona horaria',g.timezone?.id],['ISP',g.connection?.isp],['Organización',g.connection?.org],['ASN','AS'+g.connection?.asn+(g.connection?.domain?' · '+g.connection.domain:'')],['Prefijo',pre.prefix],['RIR',as]])
+    +(sh.ports?.length?`<div class=sec2>Puertos abiertos (${sh.ports.length})</div><div class=tags>${sh.ports.map(p=>`<span>${p}</span>`).join('')}</div>`:'')
+    +(sh.hostnames?.length?`<div class=sec2>Hostnames</div><div class=tags>${sh.hostnames.map(h=>`<span>${esc(h)}</span>`).join('')}</div>`:'')
+    +(sh.cpes?.length?`<div class=sec2>Software (CPE)</div><div class=tags>${sh.cpes.slice(0,40).map(c=>`<span>${esc(c)}</span>`).join('')}</div>`:'')
+    +(sh.vulns?.length?`<div class=sec2>CVEs</div><div class=tags>${sh.vulns.map(v=>`<span><a style="color:inherit" target=_blank rel=noopener href="https://nvd.nist.gov/vuln/detail/${v}">${v}</a></span>`).join('')}</div>`:'')
+    +`<div class=acts style="margin-top:12px"><a class=gb style="text-decoration:none" target=_blank rel=noopener href="https://www.google.com/maps?q=${g.latitude},${g.longitude}">Mapa</a><a class=gb style="text-decoration:none" target=_blank rel=noopener href="https://www.shodan.io/host/${ip}">Shodan</a><a class=gb style="text-decoration:none" target=_blank rel=noopener href="https://www.abuseipdb.com/check/${ip}">AbuseIPDB</a></div><p class=sub style="margin-top:10px">Los puertos vienen de Shodan InternetDB: son observaciones pasadas, no un escaneo en vivo.</p>`;
+   shot(el,3)});
+  if(tab=='dom')B(async o=>{const d=q.replace(/^https?:\/\//,'').split('/')[0].toLowerCase();
+   const [rd,dns,mx,ns,tx,cr,wb]=await Promise.all([gj('https://rdap.org/domain/'+d).catch(()=>null),gj('https://dns.google/resolve?name='+d+'&type=A').catch(()=>({})),gj('https://dns.google/resolve?name='+d+'&type=MX').catch(()=>({})),gj('https://dns.google/resolve?name='+d+'&type=NS').catch(()=>({})),gj('https://dns.google/resolve?name='+d+'&type=TXT').catch(()=>({})),gt('https://crt.sh/?q=%25.'+d+'&output=json').then(t=>JSON.parse(t)).catch(()=>[]),gj('http://archive.org/wayback/available?url='+d).catch(()=>null)]);
+   const ev=a=>rd?.events?.find(x=>x.eventAction==a)?.eventDate?.slice(0,10)||'—',rg=rd?.entities?.find(x=>(x.roles||[]).includes('registrar'))?.vcardArray?.[1]?.find(x=>x[0]=='fn')?.[3]||'—';
+   const sub=[...new Set((Array.isArray(cr)?cr:[]).flatMap(c=>String(c.name_value||'').split('\n')))].filter(x=>x.endsWith(d)).slice(0,60);
+   o.innerHTML=kv([['Dominio',d],['Registrador',rg],['Creado',ev('registration')],['Vence',ev('expiration')],['Actualizado',ev('last changed')],['Estado',(rd?.status||[]).join(', ')]])
+    +`<div class=sec2>A / AAAA</div><div class=tags>${(dns.Answer||[]).map(a=>`<span>${esc(a.data)}</span>`).join('')||'—'}</div>`
+    +`<div class=sec2>MX</div><div class=tags>${(mx.Answer||[]).map(a=>`<span>${esc(a.data)}</span>`).join('')||'—'}</div>`
+    +`<div class=sec2>NS</div><div class=tags>${(ns.Answer||[]).map(a=>`<span>${esc(a.data)}</span>`).join('')||'—'}</div>`
+    +((tx.Answer||[]).length?`<div class=sec2>TXT</div><div class=tags>${tx.Answer.map(a=>`<span>${esc(String(a.data).slice(0,120))}</span>`).join('')}</div>`:'')
+    +(sub.length?`<div class=sec2>Subdominios por certificados (${sub.length})</div><div class=tags>${sub.map(s=>`<span>${esc(s)}</span>`).join('')}</div>`:'')
+    +(wb?.archived_snapshots?.closest?`<div class=iss style="margin-top:12px">Captura en Wayback: <a target=_blank rel=noopener href="${esc(wb.archived_snapshots.closest.url)}">${esc(wb.archived_snapshots.closest.timestamp)}</a></div>`:'')
+    +`<p class=sub style="margin-top:10px">RDAP devuelve los datos que el registrador publique; muchos ocultan el titular por privacidad.</p>`;shot(el,3)});
+  if(tab=='mail')B(async o=>{const e=q.toLowerCase(),h=md5(e),dom=e.split('@')[1];
+   const [gr,ev,mx]=await Promise.all([gj('https://www.gravatar.com/'+h+'.json').catch(()=>null),gj('https://api.eva.pingutil.com/email?email='+encodeURIComponent(e)).catch(()=>null),gj('https://dns.google/resolve?name='+dom+'&type=MX').catch(()=>({}))]);
+   const p=gr?.entry||null;
+   o.innerHTML=kv([['Correo',e],['MD5',h],['Sintaxis','válida'],['Entregable',ev?.data?.deliverable===undefined?'—':(ev.data.deliverable?'sí':'no')],['Descartable',ev?.data?.disposable?'sí':'no'],['Gravatar',p?'registrado':'sin perfil']])
+    +(p?`<div class=sec2>Perfil Gravatar</div>${kv([['Nombre',[p.name?.givenName,p.name?.familyName].filter(Boolean).join(' ')],['Sobre mí',p.aboutMe],['Ubicación',p.currentLocation]])}${(p.urls||[]).map(u=>`<div class=iss"><b>${esc(u.title||'enlace')}</b><div style="word-break:break-all">${esc(u.value)}</div></div>`).join('')}${(p.accounts||[]).map(a=>`<div class=iss><b>${esc(a.shortname)}</b><div>${esc(a.username)}</div></div>`).join('')}${p.thumbnailUrl?`<img src="${esc(p.thumbnailUrl)}" style="border-radius:14px;margin-top:10px;max-width:180px">`:''}`:'')
+    +`<div class=sec2>MX del dominio</div><div class=tags>${(mx.Answer||[]).map(a=>`<span>${esc(a.data)}</span>`).join('')||'—'}</div>`
+    +`<div class=acts style="margin-top:12px"><a class=gb style="text-decoration:none" target=_blank rel=noopener href="https://gravatar.com/${h}">Abrir Gravatar</a><a class=gb style="text-decoration:none" target=_blank rel=noopener href="https://haveibeenpwned.com/account/${encodeURIComponent(e)}">Have I Been Pwned</a></div>`;shot(el,2)});
+  if(tab=='user')B(async o=>{const u=q.replace(/^@/,'');
+   const gh=await fetch('https://api.github.com/users/'+u).then(r=>r.ok?r.json():null).catch(()=>null);
+   const rd=await fetch('https://www.reddit.com/user/'+u+'/about.json').then(r=>r.ok?r.json():null).catch(()=>null);
+   const dv=await fetch('https://dev.to/api/users/by_username?url='+u).then(r=>r.ok?r.json():null).catch(()=>null);
+   const gl=await fetch('https://gitlab.com/api/v4/users?username='+u).then(r=>r.ok?r.json():null).catch(()=>null);
+   const bl=await fetch('https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor='+u+'.bsky.social').then(r=>r.ok?r.json():null).catch(()=>null);
+   const blk=(n,img,sub,desc,url)=>`<div class=iss style="display:flex;gap:12px">${img?`<img src="${esc(img)}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;background:#000;flex:none">`:''}<div style="min-width:0"><b>${esc(n)}</b><div class=sub style="margin:0">${esc(sub||'')}</div><div style="margin-top:4px;white-space:pre-wrap">${esc(desc||'')}</div>${url?`<a class=gb style="display:inline-block;margin-top:6px;text-decoration:none" target=_blank rel=noopener href="${esc(url)}">Abrir</a>`:''}</div></div>`;
+   let h='';
+   if(gh)h+=blk('GitHub',gh.avatar_url,'@'+gh.login+(gh.location?' · '+gh.location:''),gh.bio,gh.html_url);
+   if(rd?.data)h+=blk('Reddit','@'+rd.data.name+'','@'+rd.data.name,rd.data.subreddit?.public_description||'','https://reddit.com/u/'+u);
+   if(dv)h+=blk('Dev.to',dv.profile_image,dv.username,dv.summary,'https://dev.to/'+u);
+   if(Array.isArray(gl)&&gl[0])h+=blk('GitLab',gl[0].avatar_url,gl[0].username,gl[0].bio,gl[0].web_url);
+   if(bl?.did)h+=blk('Bluesky',bl.avatar,bl.handle,bl.description,'https://bsky.app/profile/'+bl.handle);
+   o.innerHTML=h||'<p class=sub>Nada en las plataformas consultadas. Usa Sherlock para el barrido completo.</p>';shot(el,2)});
+  if(tab=='tel')B(async o=>{if(!window.__lp){await new Promise((ok,no)=>{const s=document.createElement('script');s.type='module';s.textContent=`import{parsePhoneNumberFromString as p}from 'https://esm.sh/libphonenumber-js@1.11.9';window.__lp=p;dispatchEvent(new Event('lp'))`;document.head.append(s);s.onerror=no;addEventListener('lp',ok,{once:true});setTimeout(ok,6000)})}
+   const p=window.__lp(q,{defaultCountry:'ES'});if(!p)throw Error('Número no válido.');
+   o.innerHTML=kv([['Válido',p.isValid()?'sí':'no'],['País',p.country],['Prefijo',p.countryCallingCode],['Internacional',p.formatInternational()],['Nacional',p.formatNational()],['Tipo',p.getType()],['E.164',p.number]])
+    +`<div class=acts style="margin-top:12px"><a class=gb style="text-decoration:none" target=_blank rel=noopener href="https://www.google.com/search?q=%22${encodeURIComponent(p.number)}%22">Google</a><a class=gb style="text-decoration:none" target=_blank rel=noopener href="https://www.truecaller.com/search/es/${encodeURIComponent(p.number)}">Truecaller</a><a class=gb style="text-decoration:none" target=_blank rel=noopener href="https://sync.me/search/?number=${encodeURIComponent(p.number)}">Sync.me</a></div><p class=sub style="margin-top:10px">El operador real de un móvil ya no se publica sin API de pago; Google y Truecaller suelen dar el nombre.</p>`;shot(el,2)});
+  if(tab=='coin')B(async o=>{const a=q.trim();
+   if(/^(bc1|[13])[a-zA-HJ-NP-Z0-9]{20,60}$/.test(a)){const j=await gj('https://mempool.space/api/address/'+a);
+    o.innerHTML=kv([['Dirección',a],['Recibido',(j.chain_stats.funded_txo_sum/1e8)+' BTC'],['Enviado',(j.chain_stats.spent_txo_sum/1e8)+' BTC'],['Balance',((j.chain_stats.funded_txo_sum-j.chain_stats.spent_txo_sum)/1e8)+' BTC'],['Transacciones',j.chain_stats.tx_count]])
+     +`<a class=gb style="display:inline-block;margin-top:12px;text-decoration:none" target=_blank rel=noopener href="https://mempool.space/address/${a}">Ver en mempool</a>`}
+   else if(/^0x[0-9a-fA-F]{40}$/.test(a)){const j=await gj('https://api.ethplorer.io/getAddressInfo/'+a+'?apiKey=freekey');
+    o.innerHTML=kv([['Dirección',a],['ETH',j.ETH?.balance],['Tokens',(j.tokens||[]).length],['Contratos creados',(j.contractInfo?.creatorAddress)||'—']])+(j.tokens||[]).slice(0,20).map(t=>`<div class=iss><b>${esc(t.tokenInfo?.name||'token')}</b><div>${(t.balance/Math.pow(10,t.tokenInfo?.decimals||18)).toFixed(4)} ${esc(t.tokenInfo?.symbol||'')}</div></div>`).join('')
+     +`<a class=gb style="display:inline-block;margin-top:12px;text-decoration:none" target=_blank rel=noopener href="https://etherscan.io/address/${a}">Ver en Etherscan</a>`}
+   else throw Error('Dirección no reconocida (BTC o 0x…).');shot(el,2)});
+  if(tab=='dork'){const t=encodeURIComponent(q),o=R();
+   o.innerHTML=[['Google · archivos expuestos',`https://www.google.com/search?q=site:${t}+(ext:pdf OR ext:xls OR ext:doc OR ext:sql OR ext:env)`],['Google · paneles de login',`https://www.google.com/search?q=site:${t}+inurl:(login OR admin OR panel OR dashboard)`],['Google · correos',`https://www.google.com/search?q=%22@${t}%22`],['GitHub · secretos',`https://github.com/search?q=${t}+gsk_&type=code`],['GitHub · configuración',`https://github.com/search?q=${t}+filename:.env&type=code`],['Shodan',`https://www.shodan.io/search?query=${t}`],['Wayback',`https://web.archive.org/web/*/${t}/*`],['crt.sh',`https://crt.sh/?q=%25.${t}`],['VirusTotal',`https://www.virustotal.com/gui/domain/${t}`],['urlscan',`https://urlscan.io/domain/${t}`]].map(([n,u])=>`<a class=iss style="display:block;text-decoration:none;color:inherit" target=_blank rel=noopener href="${u}"><b>${n}</b><div class=sub style="margin:0;word-break:break-all">${esc(u)}</div></a>`).join('');shot(el,1)}}
+ $$('.ostabs button',el).forEach(b=>b.onclick=()=>{tab=b.dataset.k;draw()});draw()}
+
+/* ---------- SHERLOCK ---------- */
+function sherlock(el){
+ el.innerHTML=`<div class=pad><h3>Sherlock · rastreo de usuario</h3><p>Comprueba en qué plataformas existe un nombre de usuario. Solo se consultan perfiles públicos.</p><div class=osrow><input id=u placeholder="usuario" autocapitalize=none spellcheck=false><button class=pb id=go>Rastrear</button></div><div class=acts style="margin-bottom:8px"><button class=gb id=st>Mostrar solo positivos</button><span id=xp class=xpb style="color:var(--mut);font-size:12px;align-self:center"></span></div><div id=o></div></div>`;
+ const S=[['GitHub','https://github.com/{}','api','https://api.github.com/users/{}'],['GitLab','https://gitlab.com/{}','api','https://gitlab.com/api/v4/users?username={}'],['Reddit','https://reddit.com/u/{}','api','https://www.reddit.com/user/{}/about.json'],['Dev.to','https://dev.to/{}','api','https://dev.to/api/users/by_username?url={}'],['Bluesky','https://bsky.app/profile/{}.bsky.social','api','https://public.api.bsky.app/xrpc/app.bsky.actor.getProfile?actor={}.bsky.social'],['Roblox','https://www.roblox.com/search/users?keyword={}','web'],['Instagram','https://instagram.com/{}','web'],['TikTok','https://tiktok.com/@{}','web'],['X / Twitter','https://x.com/{}','web'],['YouTube','https://youtube.com/@{}','web'],['Twitch','https://twitch.tv/{}','web'],['Steam','https://steamcommunity.com/id/{}','web'],['Pinterest','https://pinterest.com/{}','web'],['Medium','https://medium.com/@{}','web'],['Behance','https://behance.net/{}','web'],['Dribbble','https://dribbble.com/{}','web'],['SoundCloud','https://soundcloud.com/{}','web'],['Spotify','https://open.spotify.com/user/{}','web'],['Telegram','https://t.me/{}','web'],['Keybase','https://keybase.io/{}','web'],['Replit','https://replit.com/@{}','web'],['CodePen','https://codepen.io/{}','web'],['HackerNews','https://news.ycombinator.com/user?id={}','web'],['Vimeo','https://vimeo.com/{}','web'],['Flickr','https://flickr.com/people/{}','web'],['Tumblr','https://{}.tumblr.com','web'],['Wattpad','https://wattpad.com/user/{}','web'],['Pastebin','https://pastebin.com/u/{}','web'],['npm','https://npmjs.com/~{}','web'],['PyPI','https://pypi.org/user/{}','web'],['DockerHub','https://hub.docker.com/u/{}','web'],['Kaggle','https://kaggle.com/{}','web'],['Bitbucket','https://bitbucket.org/{}','web'],['Mastodon','https://mastodon.social/@{}','web'],['Gravatar','https://gravatar.com/{}','web']];
+ let only=false;
+ const chk=async([n,url,kind,api],u)=>{try{
+   if(kind=='api'){const r=await fetch(api.replace('{}',encodeURIComponent(u)));const ok=r.ok;if(!ok)return null;const j=await r.json().catch(()=>1);
+     if(Array.isArray(j)&&!j.length)return null;if(j.message&&/not found/i.test(j.message))return null;if(j.error&&/not found|Profile not found/i.test(j.error))return null;return[n,url.replace('{}',u),1]}
+   const r=await fetch('https://api.allorigins.win/get?url='+encodeURIComponent(url.replace('{}',u))),j=await r.json(),c=j.status?.http_code||0;
+   const body=j.contents||'';if(c>=400||/page not found|not found|no encontrad|doesn't exist|couldn't find/i.test(body.slice(0,4000)))return null;
+   return[n,url.replace('{}',u),1]
+  }catch(e){return null}};
+ $('#st',el).onclick=e=>{only=!only;e.target.classList.toggle('pb',only);e.target.classList.toggle('gb',!only);const o=$('#o',el);if(o.dataset.d)render()};
+ let res=[];
+ const render=()=>{const o=$('#o',el),v=only?res.filter(Boolean):res.map((r,i)=>r||['','',0]);
+  o.innerHTML=v.map(r=>r[2]?`<div class=iss style="display:flex;justify-content:space-between;gap:10px;align-items:center"><b>${esc(r[0])}</b><a class=get target=_blank rel=noopener href="${esc(r[1])}">Abrir</a></div>`:`<div class=iss style="opacity:.45"><b>${esc(r[0]||'…')}</b><div class=sub style="margin:0">sin resultado</div></div>`).join('')};
+ $('#go',el).onclick=async()=>{const u=$('#u',el).value.trim().replace(/[^\w.\-]/g,''),o=$('#o',el);if(!u)return;
+  o.innerHTML='<p class=sub>Rastreando…</p>';res=new Array(S.length).fill(null);let i=0;
+  const worker=async()=>{while(i<S.length){const k=i++;res[k]=await chk(S[k],u);if(k%3==0)render()}};
+  await Promise.all([worker(),worker(),worker(),worker()]);
+  const pos=res.filter(Boolean);res=pos;
+  o.dataset.d=1;render();
+  o.insertAdjacentHTML('afterbegin',`<div class="iss" style="border-left:3px solid ${pos.length?'#4ade80':'#ff3b46'}"><b>${pos.length} coincidencia(s)</b> de ${S.length} sitios</div>`);
+  shot(el,Math.min(10,pos.length))}}
+
+/* ---------- LEADERBOARD ---------- */
+function leader(el){
+ el.innerHTML='<div class=pad><h3>Leaderboard</h3><p>Cada consulta OSINT suma XP. Cuentan las apps de rastreo, no abrir la app.</p><div id=o></div></div>';
+ const o=$('#o',el);
+ const draw=async()=>{o.innerHTML='<p class=sub>Cargando…</p>';
+  let rows=[];const u=U();
+  if(RM()){try{const r=await rq('noxy_users?select=name,data&limit=200');if(r.ok)rows=(await r.json()).filter(x=>!x.data?.dead).map(x=>({n:x.name,xp:x.data?.xp||0,ph:x.data?.photo||''}))}catch(e){}}
+  if(!rows.length)rows=LS.g('names',[]).map(n=>({n,xp:LS.g('xp_'+n,0),ph:rec(n)?.photo||''}));
+  rows.sort((a,b)=>b.xp-a.xp);const top=rows.slice(0,50),me=rows.findIndex(x=>x.n==u);
+  o.innerHTML=`<div class=iss style="border-left:3px solid var(--ac2)"><b>Tú: ${XP()} XP</b>${me<0?'':' · puesto #'+(me+1)}<div class=sub style="margin:0">${u?'':'Inicia sesión para entrar en la tabla.'}</div></div>`
+   +(top.length?top.map((x,i)=>`<div class="rk ${x.n==u?'me':''}"><span class=n>${i<3?['🥇','🥈','🥉'][i]:i+1}</span>${avH(x.n,34)}<div><b>${esc(x.n)}</b><small>${x.xp} XP</small></div></div>`).join(''):'<p class=sub>Nadie tiene XP todavía. Sé el primero.</p>')
+   +`<p class=sub style="margin-top:12px">La tabla usa la base de datos compartida; si no hay conexión se muestra solo este dispositivo.</p>`};
+ draw()}
+
+/* ---------- GROQ KEYS ---------- */
+function groqkeys(el){
+ const K=()=>LS.g('gkeys',[]),S=()=>LS.g('gstat',{});
+ const save=(a,b)=>{LS.s('gkeys',a);if(b)LS.s('gstat',b)};
+ el.innerHTML=`<div class=pad><h3>Groq Key Rotator</h3><p>Pega varias keys (una por línea). Se prueban, se rotan solas al llegar al límite y, si todas caen, la IA usa Pollinations como respaldo.</p>
+ <textarea class=cd id=t style="min-height:120px" placeholder="gsk_...&#10;gsk_..."></textarea>
+ <div class=acts style="margin:10px 0"><button class=pb id=sv>Guardar</button><button class=gb id=ts>Probar todas</button><button class=gb id=au>Buscar nuevas</button><button class=gb id=cl>Vaciar</button></div>
+ <label class=tg><input type=checkbox id=fb ${LS.g('gfb',1)?'checked':''}>Usar Pollinations si todas las keys fallan</label>
+ <div id=o style="margin-top:12px"></div></div>`;
+ const o=$('#o',el);
+ const draw=()=>{const k=K(),st=S();o.innerHTML=k.length?k.map((x,i)=>{const s=st[x];return `<div class=iss style="display:flex;gap:8px;align-items:center;justify-content:space-between"><code style="font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(x.slice(0,12))}…${esc(x.slice(-4))}</code><b class="${s=='ok'?'ok':s?'bad':''}" style="font-size:12px">${s=='ok'?'activa':s=='429'?'límite':s?'inválida':'sin probar'}</b><button class=gb data-d="${i}" style="padding:5px 10px">Quitar</button></div>`}).join(''):'<p class=sub>No hay keys guardadas. Usa la de por defecto de la app o pega las tuyas.</p>';
+  $$('[data-d]',o).forEach(b=>b.onclick=()=>{const a=K();a.splice(+b.dataset.d,1);save(a);draw()})};
+ const test=async k=>{try{const r=await fetch('https://api.groq.com/openai/v1/models',{headers:{Authorization:'Bearer '+k}});return r.ok?'ok':r.status==429?'429':r.status==401?'401':'err'}catch(e){return'err'}};
+ $('#sv',el).onclick=()=>{const v=$('#t',el).value.match(/gsk_[A-Za-z0-9]{30,}/g)||[];save([...new Set([...K(),...v])]);$('#t',el).value='';draw()};
+ $('#cl',el).onclick=()=>{save([],{});draw()};
+ $('#ts',el).onclick=async()=>{const st=S();for(const k of K()){st[k]=await test(k);draw()}LS.s('gstat',st);draw()};
+ $('#au',el).onclick=async()=>{o.innerHTML='<p class=sub>Buscando en fuentes públicas…</p>';const srcs=['https://raw.githubusercontent.com/lakshmanok/visualizing-generative-ai/main/keys.env','https://raw.githubusercontent.com/cheahjs/free-llm-api-resources/main/README.md','https://gist.githubusercontent.com/cheahjs/300239464dd84fe6902893b6b4ff7a0d/raw'];let f=[];
+  for(const u of srcs){try{const t=await gt(u);f.push(...(t.match(/gsk_[A-Za-z0-9]{30,}/g)||[]))}catch(e){}}
+  f=[...new Set(f)].filter(x=>!K().includes(x));if(!f.length)return o.innerHTML='<p class=sub>No encontré keys nuevas en esas fuentes. Prueba pegar las tuyas.</p>';
+  o.innerHTML=`<p class=sub>${f.length} candidatas. Probando…</p>`;const ok=[];for(const k of f){const s=await test(k);if(s=='ok')ok.push(k)}
+  if(ok.length){save([...K(),...ok]);o.innerHTML='<p class=ok>'+ok.length+' keys válidas añadidas.</p>'}else o.innerHTML='<p class=sub>Ninguna respondió bien (suelen caducar rápido).</p>';draw()};
+ $('#fb',el).onchange=e=>LS.s('gfb',e.target.checked);
+ draw()}
+/* ---------- LUAU STUDIO ---------- */
+function luauStudio(el){
+const PRESETS=[
+{n:'Ventana con botones',c:`local TweenService = game:GetService("TweenService")
+local gui = Instance.new("ScreenGui")
+gui.Name = "Demo"
+gui.ResetOnSpawn = false
+gui.Parent = game:GetService("CoreGui")
+
+local win = Instance.new("Frame")
+win.Size = UDim2.new(0, 300, 0, 210)
+win.Position = UDim2.new(0.5, -150, 0.5, -105)
+win.BackgroundColor3 = Color3.fromRGB(18, 16, 20)
+win.BorderSizePixel = 0
+win.Parent = gui
+
+local c = Instance.new("UICorner")
+c.CornerRadius = UDim.new(0, 12)
+c.Parent = win
+
+local st = Instance.new("UIStroke")
+st.Color = Color3.fromRGB(200, 22, 29)
+st.Thickness = 1
+st.Transparency = 0.35
+st.Parent = win
+
+local bar = Instance.new("Frame")
+bar.Size = UDim2.new(1, 0, 0, 34)
+bar.BackgroundColor3 = Color3.fromRGB(200, 22, 29)
+bar.BorderSizePixel = 0
+bar.Parent = win
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -40, 1, 0)
+title.Position = UDim2.new(0, 12, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "Noxy Demo"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.Font = Enum.Font.GothamBold
+title.TextSize = 14
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = bar
+
+local close = Instance.new("TextButton")
+close.Size = UDim2.new(0, 26, 0, 26)
+close.Position = UDim2.new(1, -32, 0, 4)
+close.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+close.BackgroundTransparency = 0.85
+close.BorderSizePixel = 0
+close.Text = "X"
+close.TextColor3 = Color3.fromRGB(255, 255, 255)
+close.Font = Enum.Font.GothamBold
+close.TextSize = 12
+close.Parent = bar
+
+local cc = Instance.new("UICorner")
+cc.CornerRadius = UDim.new(1, 0)
+cc.Parent = close
+
+close.MouseButton1Click:Connect(function()
+  print("cerrando ventana")
+  gui:Destroy()
+end)
+
+local label = Instance.new("TextLabel")
+label.Size = UDim2.new(1, -32, 0, 24)
+label.Position = UDim2.new(0, 16, 0, 48)
+label.BackgroundTransparency = 1
+label.Text = "GUI generada por el script"
+label.TextColor3 = Color3.fromRGB(230, 226, 228)
+label.TextSize = 13
+label.TextXAlignment = Enum.TextXAlignment.Left
+label.Parent = win
+
+local box = Instance.new("TextBox")
+box.Size = UDim2.new(1, -32, 0, 34)
+box.Position = UDim2.new(0, 16, 0, 80)
+box.BackgroundColor3 = Color3.fromRGB(32, 28, 34)
+box.BorderSizePixel = 0
+box.PlaceholderText = "escribe algo..."
+box.TextColor3 = Color3.fromRGB(255, 255, 255)
+box.TextSize = 13
+box.Parent = win
+
+local bc = Instance.new("UICorner")
+bc.CornerRadius = UDim.new(0, 8)
+bc.Parent = box
+
+local btn = Instance.new("TextButton")
+btn.Size = UDim2.new(1, -32, 0, 38)
+btn.Position = UDim2.new(0, 16, 1, -54)
+btn.BackgroundColor3 = Color3.fromRGB(200, 22, 29)
+btn.BorderSizePixel = 0
+btn.Text = "Ejecutar"
+btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+btn.Font = Enum.Font.GothamBold
+btn.TextSize = 14
+btn.Parent = win
+
+local bbc = Instance.new("UICorner")
+bbc.CornerRadius = UDim.new(0, 8)
+bbc.Parent = btn
+
+btn.MouseButton1Click:Connect(function()
+  print("boton pulsado · texto: " .. (box.Text ~= "" and box.Text or "(vacio)"))
+  TweenService:Create(btn, TweenInfo.new(0.15), {
+    BackgroundColor3 = Color3.fromRGB(255, 45, 58)
+  }):Play()
+end)
+
+print("GUI cargada correctamente")`},
+{n:'Notificación toast',c:`local gui = Instance.new("ScreenGui")
+gui.Parent = game:GetService("CoreGui")
+
+local f = Instance.new("Frame")
+f.Size = UDim2.new(0, 260, 0, 64)
+f.Position = UDim2.new(0.5, -130, 1, -90)
+f.BackgroundColor3 = Color3.fromRGB(20, 18, 22)
+f.BorderSizePixel = 0
+f.Parent = gui
+
+local c = Instance.new("UICorner")
+c.CornerRadius = UDim.new(0, 10)
+c.Parent = f
+
+local s = Instance.new("UIStroke")
+s.Color = Color3.fromRGB(61, 220, 132)
+s.Thickness = 1
+s.Parent = f
+
+local t = Instance.new("TextLabel")
+t.Size = UDim2.new(1, -20, 1, -20)
+t.Position = UDim2.new(0, 10, 0, 10)
+t.BackgroundTransparency = 1
+t.Text = "Script ejecutado con exito"
+t.TextColor3 = Color3.fromRGB(230, 240, 232)
+t.TextSize = 14
+t.Font = Enum.Font.GothamBold
+t.Parent = f
+
+print("toast mostrado")
+task.wait(3)
+f:Destroy()
+print("toast cerrado")`},
+{n:'Bucle con task.wait',c:`local gui = Instance.new("ScreenGui")
+gui.Parent = game:GetService("CoreGui")
+
+local l = Instance.new("TextLabel")
+l.Size = UDim2.new(0, 200, 0, 40)
+l.Position = UDim2.new(0, 20, 0, 20)
+l.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+l.BackgroundTransparency = 0.3
+l.BorderSizePixel = 0
+l.Text = "tick 0"
+l.TextColor3 = Color3.fromRGB(255, 255, 255)
+l.TextSize = 14
+l.Parent = gui
+
+local n = 0
+while true do
+  n = n + 1
+  l.Text = "tick " .. n
+  print("tick " .. n)
+  task.wait(1)
+end`},
+{n:'Probar stubs de executor',c:`print("executor:", identifyexecutor())
+print("genv:", typeof(getgenv()))
+print("PlaceId:", game.PlaceId)
+print("hookmetamethod:", typeof(hookmetamethod))
+print("firesignal:", typeof(firesignal))
+
+local gui = Instance.new("ScreenGui")
+gui.Parent = game:GetService("CoreGui")
+local b = Instance.new("TextButton")
+b.Size = UDim2.new(0, 160, 0, 40)
+b.Position = UDim2.new(0, 20, 0, 20)
+b.Text = "contador"
+b.TextSize = 14
+b.Parent = gui
+
+local i = 0
+b.MouseButton1Click:Connect(function()
+  i = i + 1
+  b.Text = "clics: " .. i
+  warn("clic numero " .. i)
+end)`}];
+el.innerHTML=`<div class=lsp id=lsp>
+ <div class=lsbar><select id=lssel><option value="">Ejemplos…</option>${PRESETS.map((p,i)=>`<option value=${i}>${esc(p.n)}</option>`).join('')}</select>
+ <button class=lsrun id=lsrun>Ejecutar</button><button class=lsstop id=lsstop>Detener</button><button class=lsstop id=lsclr>Limpiar</button><span class=lsstat id=lsst>listo</span></div>
+ <div class=lstabs><button class=on data-t=cod>Código</button><button data-t=vis>Vista</button></div>
+ <div class=lsbody><div class="lscol lc1"><textarea id=lscode class=lscode spellcheck=false autocapitalize=none></textarea></div>
+ <div class="lscol lc2"><div class=lsview><div class=lsvp id=lsvp></div><span class=lstag>ScreenGui simulado</span></div><div class=lscon id=lscon></div></div></div></div>`;
+const con=$('#lscon',el),vp=$('#lsvp',el),codeEl=$('#lscode',el),stat=$('#lsst',el),lsp=$('#lsp',el);
+const MAXC=300;let running=false,timer=null,co=null,coRef=null,curL=null,ins=0,hbRaf=null,hbLast=0,lua,lauxlib,lualib;
+const log=(t,c)=>{const d=document.createElement('div');d.className='lsl '+(c||'s');d.textContent=t;con.append(d);while(con.childElementCount>MAXC)con.firstElementChild.remove();con.scrollTop=con.scrollHeight};
+const str=v=>{if(v==null)return 'nil';if(typeof v==='object'){if(v.__inst)return v.className;if(v.__rbx)return v.__rbx}return String(v)};
+const CHAIN={Instance:[],GuiObject:['Instance'],LayerCollector:['Instance'],ScreenGui:['LayerCollector'],Frame:['GuiObject'],TextLabel:['GuiObject'],TextButton:['GuiObject'],TextBox:['GuiObject'],ImageLabel:['GuiObject'],ImageButton:['GuiObject'],ScrollingFrame:['GuiObject'],UIComponent:['Instance'],UICorner:['UIComponent'],UIStroke:['UIComponent'],UIPadding:['UIComponent'],UIGradient:['UIComponent'],UIListLayout:['UIComponent'],UIGridLayout:['UIComponent'],UIAspectRatioConstraint:['UIComponent'],UIScale:['UIComponent'],Folder:['Instance']};
+const PROPS={Instance:['Name','Parent','Archivable'],GuiObject:['Visible','Size','Position','AnchorPoint','BackgroundColor3','BackgroundTransparency','BorderColor3','BorderSizePixel','ClipsDescendants','Rotation','ZIndex'],ScreenGui:['Enabled','ResetOnSpawn'],TextLabel:['Text','TextColor3','TextSize','Font','TextScaled','TextWrapped','RichText','TextXAlignment','TextYAlignment'],TextButton:['Text','TextColor3','TextSize','Font','TextXAlignment','TextYAlignment'],TextBox:['Text','PlaceholderText','TextColor3','TextSize','TextXAlignment'],ImageLabel:['Image','ImageTransparency','ScaleType'],ImageButton:['Image','ImageTransparency','ScaleType'],UIListLayout:['Padding','FillDirection','HorizontalAlignment','VerticalAlignment'],UIPadding:['PaddingTop','PaddingBottom','PaddingLeft','PaddingRight'],UICorner:['CornerRadius'],UIStroke:['Color','Thickness','Transparency'],UIGradient:['Color','Rotation'],UIAspectRatioConstraint:['AspectRatio']};
+const DEF={Size:()=>({__rbx:'UDim2',xs:0,xo:100,ys:0,yo:100}),Position:()=>({__rbx:'UDim2',xs:0,xo:0,ys:0,yo:0}),AnchorPoint:()=>({__rbx:'Vector2',x:0,y:0}),BackgroundColor3:()=>({__rbx:'Color3',r:1,g:1,b:1}),BackgroundTransparency:0,BorderSizePixel:1,BorderColor3:()=>({__rbx:'Color3',r:.1,g:.1,b:.1}),Visible:true,ZIndex:1,Text:'',TextColor3:()=>({__rbx:'Color3',r:0,g:0,b:0}),TextSize:14,Font:'Legacy',TextXAlignment:'Center',TextYAlignment:'Center',Color:()=>({__rbx:'Color3',r:0,g:0,b:0}),Thickness:1,Transparency:0,CornerRadius:()=>({__rbx:'UDim',s:0,o:0}),Padding:()=>({__rbx:'UDim',s:0,o:0}),AspectRatio:1,FillDirection:'Vertical',HorizontalAlignment:'Left',VerticalAlignment:'Top',Enabled:true};
+const EVS={GuiObject:['InputBegan','InputEnded','MouseEnter','MouseLeave'],TextButton:['MouseButton1Click','MouseButton1Down','MouseButton1Up','Activated'],ImageButton:['MouseButton1Click'],TextBox:['Focused','FocusLost']};
+const mkSig=()=>{const l=[];return{_l:l,Connect(f){if(typeof f==='function')l.push(f);return{Connected:true,Disconnect(){const i=l.indexOf(f);if(i>=0)l.splice(i,1)}}},Once(f){const c=this.Connect((...a)=>{c.Disconnect();f(...a)});return c},Wait(){return null},Fire(...a){l.slice().forEach(f=>{try{f(...a)}catch(e){log('error en evento: '+e.message,'e')}})}}};
+const sig=(o,n)=>o._s[n]||(o._s[n]=mkSig());
+const PROTO={Destroy(){setPar(this,null);this.dead=true;chg()},GetChildren(){return this.ch.slice()},GetDescendants(){const o=[],w=a=>a.forEach(c=>{o.push(c);w(c.ch)});w(this.ch);return o},FindFirstChild(n){return this.ch.find(c=>c.Name===n)||null},WaitForChild(n){return this.FindFirstChild(n)},IsA(c){return c===this.cn||(CHAIN[this.cn]||[]).includes(c)},ClearAllChildren(){this.ch.forEach(c=>c.parent=null);this.ch=[];chg()},GetPropertyChangedSignal(){return mkSig()},TweenSize(u){this.Size=u},TweenPosition(u){this.Position=u},GetFullName(){return this.Name}};
+function setPar(o,p){if(o.parent&&o.parent.ch)o.parent.ch=o.parent.ch.filter(x=>x!==o);o.parent=p||null;if(p&&p.ch&&!p.ch.includes(o))p.ch.push(o);chg()}
+function newInst(cn){if(!CHAIN[cn])cn='Frame';const o=Object.create(PROTO);o.__inst=1;o.cn=cn;o.ch=[];o._p={};o._s={};o.dead=false;o.parent=null;
+ const ps=new Set();(CHAIN[cn]||[]).forEach(k=>(PROPS[k]||[]).forEach(p=>ps.add(p)));Object.defineProperty(o,'ClassName',{get:()=>cn});
+ ps.forEach(p=>Object.defineProperty(o,p,{enumerable:true,configurable:true,get(){if(p in this._p)return this._p[p];const d=DEF[p];return typeof d==='function'?d():d},set(v){this._p[p]=v;if(p==='Parent')setPar(this,v);else chg()}}));
+ Object.defineProperty(o,'Name',{enumerable:true,get(){return this._p.Name||cn},set(v){this._p.Name=v;chg()}});
+ (EVS[cn]||[]).concat(EVS.GuiObject).forEach(e=>Object.defineProperty(o,e,{enumerable:true,get(){return sig(this,e)}}));return o}
+const SVC=new Map();
+function svc(n){if(SVC.has(n))return SVC.get(n);const s=newInst('Folder');s.Name=n;
+ if(n==='Players'){const lp=newInst('Folder');lp.Name='NoxyPlayer';const pg=newInst('Folder');pg.Name='PlayerGui';setPar(pg,lp);lp.PlayerGui=pg;s.LocalPlayer=lp;s.PlayerAdded=mkSig()}
+ if(n==='RunService'){s.Heartbeat=mkSig();s.RenderStepped=mkSig()}
+ if(n==='TweenService')s.Create=(t,i,p)=>({Play(){Object.keys(p).forEach(k=>{try{t[k]=p[k]}catch(e){}})},Cancel(){},Completed:mkSig()});
+ if(n==='UserInputService'){s.InputBegan=mkSig();s.IsKeyDown=()=>false}
+ if(n==='HttpService'){s.JSONEncode=v=>JSON.stringify(v);s.JSONDecode=v=>JSON.parse(v)}
+ SVC.set(n,s);return s}
+const gameObj={ClassName:'DataModel',PlaceId:1234567890,JobId:'noxy-sim',GetService:n=>svc(n),FindService:n=>svc(n),IsLoaded:()=>true,BindToClose(){}};
+['Players','CoreGui','ReplicatedStorage','RunService','TweenService','UserInputService','HttpService','Lighting'].forEach(n=>Object.defineProperty(gameObj,n,{get:()=>svc(n)}));
+const VIS=new Set(['ScreenGui','Frame','TextLabel','TextButton','TextBox','ImageLabel','ImageButton','ScrollingFrame']);
+const COMP=new Set(['UIListLayout','UIGridLayout','UIPadding','UICorner','UIStroke','UIGradient','UIAspectRatioConstraint','UIScale']);
+const rgb=c=>c&&c.__rbx?`rgba(${Math.round(c.r*255)},${Math.round(c.g*255)},${Math.round(c.b*255)},`:'rgba(255,255,255,';
+const cpx=(s,o)=>`calc(${s*100}% + ${o}px)`;
+const FONTS={Gotham:'Inter,system-ui,sans-serif',GothamBold:'Inter,system-ui,sans-serif',Code:'ui-monospace,monospace',Legacy:'system-ui,sans-serif'};
+let raf=null;function chg(){if(raf)return;raf=requestAnimationFrame(()=>{raf=null;render()})}
+function roots(){const o=[];o.push(...svc('CoreGui').ch);const pg=svc('Players').LocalPlayer.PlayerGui;if(pg)o.push(...pg.ch);return o.filter(c=>c.cn==='ScreenGui'&&!c.dead&&c._p.Enabled!==false)}
+function render(){if(!vp)return;vp.innerHTML='';roots().forEach(r=>{const d=build(r);if(d)vp.append(d)})}
+function build(i){if(!VIS.has(i.cn)||i._p.Visible===false)return null;const cn=i.cn,isB=cn==='TextButton'||cn==='ImageButton';
+ if(cn==='ScreenGui'){const d=document.createElement('div');d.className='lssg';i.ch.forEach(c=>{const x=build(c);if(x)d.append(x)});return d}
+ const d=document.createElement(isB?'button':'div');d.className='lso';const p=i.Position,s=i.Size,ap=i.AnchorPoint;
+ d.style.left=cpx(p.xs,p.xo);d.style.top=cpx(p.ys,p.yo);d.style.width=cpx(s.xs,s.xo);d.style.height=cpx(s.ys,s.yo);d.style.transform=`translate(${-ap.x*100}%,${-ap.y*100}%)`;d.style.zIndex=i.ZIndex;
+ d.style.background=rgb(i.BackgroundColor3)+Math.max(0,1-(i.BackgroundTransparency||0))+')';
+ if(i.BorderSizePixel>0)d.style.border=`${i.BorderSizePixel}px solid ${rgb(i.BorderColor3)}1)`;
+ const tx=i._p.Text;
+ if(tx!==undefined){d.style.color=rgb(i.TextColor3)+'1)';d.style.fontSize=(i.TextSize||14)+'px';d.style.fontFamily=FONTS[i.Font]||FONTS.Legacy;d.style.fontWeight=/Bold|Black/i.test(i.Font)?'700':'400';
+  d.style.justifyContent=({Left:'flex-start',Center:'center',Right:'flex-end'})[i.TextXAlignment]||'center';d.style.alignItems=({Top:'flex-start',Center:'center',Bottom:'flex-end'})[i.TextYAlignment]||'center';d.style.textAlign=({Left:'left',Center:'center',Right:'right'})[i.TextXAlignment]||'center';
+  if(cn==='TextBox'){const inp=document.createElement('input');inp.value=tx||'';inp.placeholder=i.PlaceholderText||'';inp.style.cssText='all:unset;width:100%;height:100%;color:inherit;font:inherit;text-align:inherit;padding:0 8px';inp.oninput=()=>{i._p.Text=inp.value};d.append(inp)}
+  else{d.innerHTML=esc(tx||'')}}
+ if(i._p.Image){const id=(i.Image.match(/\d+/)||[])[0];if(id){d.style.backgroundImage=`url(https://www.roblox.com/asset-thumbnail/image?assetId=${id}&width=420&height=420&format=png)`;d.style.backgroundSize=i.ScaleType==='Crop'?'cover':'contain'}}
+ if(cn==='ScrollingFrame')d.style.overflow='auto';
+ if(isB){d.style.cursor='pointer';d.onmousedown=()=>sig(i,'MouseButton1Down').Fire();d.onclick=()=>{sig(i,'MouseButton1Click').Fire();sig(i,'Activated').Fire();log('clic: '+(i._p.Name||cn),'i')}}
+ i.ch.forEach(c=>{if(c.cn==='UICorner'){const r=c.CornerRadius;d.style.borderRadius=r.s>=1?'999px':(r.o||0)+'px'}
+  else if(c.cn==='UIStroke')d.style.border=`${c.Thickness||1}px solid ${rgb(c.Color)}${1-(c.Transparency||0)})`;
+  else if(c.cn==='UIPadding')d.style.padding=`${c.PaddingTop.o||0}px ${c.PaddingRight.o||0}px ${c.PaddingBottom.o||0}px ${c.PaddingLeft.o||0}px`;
+  else if(c.cn==='UIListLayout'){d.style.display='flex';d.style.gap=(c.Padding.o||0)+'px';d.style.flexDirection=c.FillDirection==='Horizontal'?'row':'column'}
+  else if(c.cn==='UIAspectRatioConstraint'&&c.AspectRatio)d.style.aspectRatio=String(c.AspectRatio)});
+ i.ch.forEach(c=>{if(!COMP.has(c.cn)){const x=build(c);if(x)d.append(x)}});return d}
+const TRANS=src=>{let s=src;try{
+ s=s.replace(/([A-Za-z_]\w*)\s*::\s*[A-Za-z_][\w.]*/g,'$1');
+ s=s.replace(/\blocal\s+([A-Za-z_][\w, ]*?)\s*:\s*\{[^{}\n]*\}/g,'local $1');
+ s=s.replace(/\blocal\s+([A-Za-z_][\w, ]*?)\s*:\s*[A-Za-z_][\w.]*/g,'local $1');
+ s=s.replace(/(function\s+[\w.:]*\s*\()([^)\n]*)(\)\s*):\s*[A-Za-z_][\w.]*/g,(m,a,b)=>a+b.replace(/([A-Za-z_]\w*)\s*:\s*[^,)]+/g,'$1')+')');
+ s=s.replace(/([A-Za-z_][\w.\[\]]*)\s*(\.\.|\+|-|\*|\/|%)=/g,'$1 = $1 $2 ');
+ const L=s.split('\n'),st=[],out=[];let n=0;
+ for(let k=0;k<L.length;k++){const op=[...L[k].matchAll(/\b(function|if|for|while|repeat)\b/g)].map(m=>m[1]);
+  const dc=(L[k].match(/\bdo\b/g)||[]).length-(L[k].match(/\b(for|while)\b/g)||[]).length;for(let z=0;z<Math.max(0,dc);z++)op.push('do');op.forEach(t=>st.push({t,u:0}));
+  if(/\bcontinue\b/.test(L[k])){let id=-1;for(let z=st.length-1;z>=0;z--)if(['for','while','repeat'].includes(st[z].t)){id=z;break}
+   if(id>=0){st[id].u=1;if(!st[id].id)st[id].id=++n;L[k]=L[k].replace(/\bcontinue\b/g,'goto __c'+st[id].id)}}
+  const pre=[];for(let z=0;z<(L[k].match(/\bend\b/g)||[]).length;z++){const e=st.pop();if(e&&e.u)pre.push('::__c'+e.id+'::')}
+  out.push(...pre,L[k])}
+ s=out.join('\n')}catch(e){}return s};
+const GENV={};
+const toJSfn=(idx,t)=>{t=t||curL;lauxlib.lua_pushvalue(t,idx);const r=lauxlib.luaL_ref(t,lua.LUA_REGISTRYINDEX);
+ return(...a)=>{const b=lua.lua_gettop(t);lua.lua_rawgeti(t,lua.LUA_REGISTRYINDEX,r);a.forEach(v=>fengari.interop.push(t,v));
+  if(lua.lua_pcall(t,a.length,0,0)!==lua.LUA_OK)log(lua.lua_tojsstring(t,-1),'e');lua.lua_settop(t,b)}};
+function setup(L){const G=(n,v)=>{fengari.interop.push(L,v);lua.lua_setglobal(L,lua.to_luastring(n))};
+ const C3=(r,g,b)=>({__rbx:'Color3',r:r||0,g:g||0,b:b||0});
+ G('print',L=>{const a=[];for(let i=1;i<=lua.lua_gettop(L);i++)a.push(str(fengari.interop.tojs(L,i)));log(a.join('\t'))});
+ G('warn',L=>{const a=[];for(let i=1;i<=lua.lua_gettop(L);i++)a.push(str(fengari.interop.tojs(L,i)));log(a.join('\t'),'w')});
+ G('typeof',L=>{const v=fengari.interop.tojs(L,1);lua.lua_pushstring(L,lua.to_luastring(v&&typeof v==='object'&&v.__inst?'Instance':(v&&v.__rbx)||typeof v));return 1});
+ G('tick',()=>performance.now()/1000);G('time',()=>performance.now()/1000);
+ const y=(L)=>{const n=lua.lua_tonumber(L,1)||0;lua.lua_pushnumber(L,n);return lua.lua_yield(L,1)};
+ G('wait',y);G('task',{wait:y,spawn:(L)=>{lauxlib.lua_pushvalue(L,1);lua.lua_pcall(L,0,0,0);return 0},defer:(L)=>{lauxlib.lua_pushvalue(L,1);lua.lua_pcall(L,0,0,0);return 0},delay:(L)=>{lauxlib.lua_pushvalue(L,2);lua.lua_pcall(L,0,0,0);return 0}});
+ G('spawn',(L)=>{lauxlib.lua_pushvalue(L,1);lua.lua_pcall(L,0,0,0);return 0});
+ G('Instance',{new:cn=>{if(!CHAIN[cn])log('Instance.new: clase no simulada "'+cn+'"','w');return newInst(cn)}});
+ G('Color3',{new:(r,g,b)=>C3(r,g,b),fromRGB:(r,g,b)=>C3((r||0)/255,(g||0)/255,(b||0)/255),fromHSV:(h,s,v)=>{h=(h||0)%1;const f=n=>{const k=(n+h*12)%12,a=s*Math.min(v,1-Math.min(v,1));return v-a*Math.max(-1,Math.min(k-3,9-k,1))};return C3(f(0),f(8),f(4))}});
+ G('UDim2',{new:(xs,xo,ys,yo)=>({__rbx:'UDim2',xs:xs||0,xo:xo||0,ys:ys||0,yo:yo||0}),fromOffset:(x,y)=>({__rbx:'UDim2',xs:0,xo:x||0,ys:0,yo:y||0}),fromScale:(x,y)=>({__rbx:'UDim2',xs:x||0,xo:0,ys:y||0,yo:0})});
+ G('UDim',{new:(s,o)=>({__rbx:'UDim',s:s||0,o:o||0})});G('Vector2',{new:(x,y)=>({__rbx:'Vector2',x:x||0,y:y||0})});
+ G('Vector3',{new:(x,y,z)=>({__rbx:'Vector3',x:x||0,y:y||0,z:z||0})});
+ G('ColorSequence',{new:(a,b)=>({__rbx:'CS'})});G('NumberSequence',{new:()=>({__rbx:'NS'})});G('TweenInfo',{new:()=>({__rbx:'TI'})});G('CFrame',{new:()=>({__rbx:'CF'})});
+ G('Enum',new Proxy({},{get:(t,k)=>new Proxy({},{get:(_,n)=>({__rbx:'EI',Name:n,Value:n})})}));
+ G('game',gameObj);G('workspace',svc('ReplicatedStorage'));
+ G('getgenv',()=>GENV);G('getrenv',()=>GENV);G('identifyexecutor',()=>'Delta');G('getexecutorname',()=>'Delta');
+ G('hookfunction',(a,b)=>b||a);G('newcclosure',f=>f);G('clonefunction',f=>f);G('hookmetamethod',(o,m,f)=>f);
+ G('getrawmetatable',o=>o);G('setreadonly',()=>true);G('isreadonly',()=>true);G('getnamecallmethod',()=>'');
+ G('getgc',()=>({}));G('getinstances',()=>[]);G('getnilinstances',()=>[]);
+ G('firesignal',(s,...a)=>{s&&s.Fire&&s.Fire(...a)});
+ G('fireclickdetector',()=>log('fireclickdetector: simulado','m'));G('fireproximityprompt',()=>log('fireproximityprompt: simulado','m'));
+ G('getconnections',()=>[]);G('setclipboard',t=>navigator.clipboard&&navigator.clipboard.writeText(String(t)));G('toclipboard',t=>navigator.clipboard&&navigator.clipboard.writeText(String(t)));
+ G('request',()=>{log('request() simulado','m');return{StatusCode:200,Body:'',Success:true}});G('http_request',()=>({StatusCode:200,Body:'',Success:true}));
+ G('loadstring',(L)=>{const c=TRANS(lua.lua_tojsstring(L,1));const fn=()=>{const b=lua.lua_gettop(curL);
+  if(lauxlib.luaL_loadstring(curL,lua.to_luastring(c))!==lua.LUA_OK){log(lua.lua_tojsstring(curL,-1),'e');lua.lua_settop(curL,b);return}
+  if(lua.lua_pcall(curL,0,0,0)!==lua.LUA_OK)log(lua.lua_tojsstring(curL,-1),'e');lua.lua_settop(curL,b)};
+  fengari.interop.push(L,fn);return 1})}
+function hookFn(L){ins+=20000;if(ins>2e6){lua.lua_pushstring(L,lua.to_luastring('demasiadas instrucciones sin task.wait(): detenido'));lua.lua_error(L)}}
+function finish(){running=false;stat.textContent='terminado';if(hbRaf){cancelAnimationFrame(hbRaf);hbRaf=null}}
+function stop(){clearTimeout(timer);timer=null;co=null;coRef=null;if(running)log('— detenido —','m');finish()}
+function hbLoop(t){if(!el.isConnected||!running){hbRaf=null;return}const rs=SVC.get('RunService');
+ if(rs&&co){const dt=(t-(hbLast||t))/1000;hbLast=t;curL=co;if(rs.Heartbeat._l.length)try{rs.Heartbeat.Fire(dt)}catch(e){}}hbRaf=requestAnimationFrame(hbLoop)}
+function resume(){if(!co||!running)return;if(!el.isConnected)return stop();const L=co;curL=L;const base=lua.lua_gettop(L);ins=0;
+ lua.lua_sethook(L,hookFn,lua.LUA_MASKCOUNT,20000);const st=lua.lua_resume(L,null,0);lua.lua_sethook(L,null,0,0);
+ if(st===lua.LUA_YIELD){const w=lua.lua_tonumber(L,base+1)||0;lua.lua_settop(L,base);timer=setTimeout(resume,Math.min(Math.max(w*1000,0),3000));return}
+ if(st!==lua.LUA_OK){log(lua.lua_tojsstring(L,-1),'e');lua.lua_settop(L,base);finish();return}
+ lua.lua_settop(L,base);finish()}
+let FW=null;const ready=()=>FW||(FW=new Promise((ok,no)=>{if(window.fengari)return ok(window.fengari);
+ const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/fengari-web@0.1.4/dist/fengari-web.js';s.onload=()=>ok(window.fengari);s.onerror=()=>no(Error('no pude cargar el motor Lua'));document.head.append(s)}));
+async function run(){if(running)stop();const code=codeEl.value;if(!code.trim())return;log('▶ ejecutando…','m');running=true;stat.textContent='ejecutando';SVC.clear();
+ let F;try{F=await ready()}catch(e){log(e.message,'e');finish();return}lua=F.lua;lauxlib=F.lauxlib;lualib=F.lualib;
+ const L=lauxlib.luaL_newstate();lualib.luaL_openlibs(L);setup(L);
+ const src=TRANS(code);
+ if(lauxlib.luaL_loadstring(L,lua.to_luastring(src))!==lua.LUA_OK){log(lua.lua_tojsstring(L,-1),'e');finish();return}
+ lua.lua_getglobal(L,lua.to_luastring('coroutine'));lua.lua_getfield(L,-1,lua.to_luastring('create'));lua.lua_remove(L,-2);
+ lauxlib.luaL_loadstring(L,lua.to_luastring(src));
+ if(lua.lua_pcall(L,1,1,0)!==lua.LUA_OK){log(lua.lua_tojsstring(L,-1),'e');finish();return}
+ co=lua.lua_tothread(L,-1);coRef=lauxlib.luaL_ref(L,lua.LUA_REGISTRYINDEX);
+ hbLast=0;hbRaf=requestAnimationFrame(hbLoop);resume()}
+$('#lsrun',el).onclick=run;$('#lsstop',el).onclick=stop;
+$('#lsclr',el).onclick=()=>{SVC.clear();vp.innerHTML='';log('GUI limpiada','m')};
+$('#lssel',el).onchange=e=>{const p=PRESETS[e.target.value];if(p){codeEl.value=p.c;e.target.value='';lsp.classList.add('m-vis')}};
+$$('.lstabs button',el).forEach(b=>b.onclick=()=>{$$('.lstabs button',el).forEach(x=>x.classList.toggle('on',x===b));lsp.classList.toggle('m-vis',b.dataset.t==='vis')});
+codeEl.value=PRESETS[0].c;
+codeEl.onkeydown=e=>{if(e.key==='Tab'){e.preventDefault();const a=codeEl.selectionStart;codeEl.value=codeEl.value.slice(0,a)+'  '+codeEl.value.slice(codeEl.selectionEnd);codeEl.selectionStart=codeEl.selectionEnd=a+2}};
+log('Luau Studio · Lua 5.3 real con API de Roblox simulada.','m');log('Carga un ejemplo y pulsa Ejecutar.','s')}
+
+APPS.push(
+ {id:'osint',name:'OSINT Toolkit',ic:'eye',desc:'IP, dominio, email, usuario, teléfono, cripto y dorks.',cat:'Seguridad',r:osint,tech:['RDAP','Shodan InternetDB','crt.sh','Gravatar']},
+ {id:'sherlock',name:'Sherlock',ic:'search',desc:'Busca un usuario en 35 plataformas a la vez.',cat:'Seguridad',r:sherlock,tech:['OSINT']},
+ {id:'leader',name:'Leaderboard',ic:'bars',desc:'Ranking de XP por consultas OSINT.',cat:'Seguridad',r:leader,tech:['Supabase']},
+ {id:'groqkeys',name:'Groq Key Rotator',ic:'key',desc:'Rota API keys y cae a Pollinations si se agotan.',cat:'IA',r:groqkeys,tech:['Groq','Pollinations']},
+ {id:'luau',name:'Luau Studio',ic:'braces',desc:'Ejecuta scripts de Delta y mira la GUI simulada.',cat:'Herramientas',r:luauStudio,tech:['Fengari','Lua 5.3']});
 </script></body></html>
