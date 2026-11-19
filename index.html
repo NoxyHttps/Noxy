@@ -1375,7 +1375,7 @@ APPS.push(
  {id:'leader',name:'Leaderboard',ic:'bars',desc:'Ranking de XP por consultas OSINT.',cat:'Seguridad',r:leader,tech:['Supabase']},
  {id:'groqkeys',name:'Groq Key Rotator',ic:'key',desc:'Rota API keys y cae a Pollinations si se agotan.',cat:'IA',r:groqkeys,tech:['Groq','Pollinations']},
  {id:'luau',name:'Luau Studio',ic:'braces',desc:'Ejecuta scripts de Delta y mira la GUI simulada.',cat:'Herramientas',r:luauStudio,tech:['Fengari','Lua 5.3']});
- /* ===== NOXY v5: dock, Plont (xPlont), herramientas .py, Luau fix, Plont Community ===== */
+ /* ===== NOXY v6: dock, Plont (xPlont), herramientas .py, Luau fix, Plont Community ===== */
 (()=>{
 document.head.insertAdjacentHTML('beforeend',`<style>
 #side{max-width:calc(100% - 16px)!important;padding:8px 10px!important;gap:2px!important}
@@ -1383,8 +1383,9 @@ document.head.insertAdjacentHTML('beforeend',`<style>
 .nv span{display:block!important;font-size:10.5px;font-weight:600;letter-spacing:.01em}
 .nv:after{display:none!important}
 #view{padding-bottom:124px!important}
+.osrow>#go{width:auto!important;height:44px;flex:none}
 .plh{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
-.plh .lk{margin-left:auto}
+.plh .plk{margin-left:auto}
 .plgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
 .plc{position:relative;text-align:left;padding:14px;border-radius:16px;border:1px solid var(--bd);background:var(--bg2);display:flex;gap:12px;align-items:flex-start;transition:border-color .15s,transform .1s}
 .plc:hover{border-color:var(--ac2)}.plc:active{transform:scale(.985)}
@@ -1402,15 +1403,13 @@ document.head.insertAdjacentHTML('beforeend',`<style>
 .lsempty{position:absolute;inset:0;display:grid;place-items:center;color:#ffffff44;font-size:12px;text-align:center;padding:20px}
 </style>`);
 
-/* helpers con fallback por si el bloque anterior no está */
-const GJ = typeof gj!=='undefined'?gj:(u=>fetch(u).then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json()}));
-const GT = typeof gt!=='undefined'?gt:(u=>fetch(u).then(r=>r.text()));
-const KV = typeof kv!=='undefined'?kv:a=>'<div class=kv>'+a.map(([k,v])=>`<b>${esc(k)}</b><span>${esc(v==null||v===''?'—':v)}</span>`).join('')+'</div>';
-const SHOT = typeof shot!=='undefined'?shot:()=>{};
-const GET = (p,d)=>{try{return JSON.parse(localStorage.getItem(p))??d}catch(e){return d}};
-const SET = (p,v)=>{try{localStorage.setItem(p,JSON.stringify(v))}catch(e){}};
+const GJ=typeof gj!=='undefined'?gj:(u=>fetch(u).then(r=>{if(!r.ok)throw Error('HTTP '+r.status);return r.json()}));
+const GT=typeof gt!=='undefined'?gt:(u=>fetch(u).then(r=>r.text()));
+const KV=typeof kv!=='undefined'?kv:a=>'<div class=kv>'+a.map(([k,v])=>`<b>${esc(k)}</b><span>${esc(v==null||v===''?'—':v)}</span>`).join('')+'</div>';
+const SHOT=typeof shot!=='undefined'?shot:()=>{};
+const GET=(p,d)=>{try{return JSON.parse(localStorage.getItem(p))??d}catch(e){return d}};
+const SET=(p,v)=>{try{localStorage.setItem(p,JSON.stringify(v))}catch(e){}};
 
-/* ---------- ZIP (store + CRC32) ---------- */
 const CRC=(()=>{const t=new Uint32Array(256);for(let i=0;i<256;i++){let c=i;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[i]=c>>>0}return t})();
 const crc32=b=>{let c=0xFFFFFFFF;for(const x of b)c=CRC[(c^x)&255]^(c>>>8);return(c^0xFFFFFFFF)>>>0};
 const u16=v=>[v&255,(v>>8)&255],u32=v=>[v&255,(v>>8)&255,(v>>16)&255,(v>>24)&255];
@@ -1427,20 +1426,18 @@ function zip(files){
 const README=(t,d,ex)=>`NOXY PLONT - ${t}\r\n${'='.repeat(46)}\r\n\r\nQue hace:\r\n${d}\r\n\r\nUso rapido (Windows):\r\n1. Instala Python 3 desde python.org y marca "Add Python to PATH".\r\n2. Abre CMD en esta carpeta (shift + clic derecho > abrir terminal).\r\n3. pip install -r requirements.txt\r\n4. ${ex}\r\n\r\nLinux / Mac:\r\n1. python3 -m pip install -r requirements.txt\r\n2. ${ex.replace('python ','python3 ')}\r\n\r\nNotas:\r\n- Solo usa datos publicos. Nada de esto rompe nada.\r\n- Si un servicio limita, espera un rato o cambia de red.\r\n- Hecho por Noxy. Version web: noxypryor.vercel.app\r\n`;
 const pack=(file,py,t,d,ex)=>zip([{n:'noxyplont_'+file+'.py',d:py},{n:'requirements.txt',d:'requests\n'},{n:'README.txt',d:README(t,d,ex)}]);
 
-/* ---------- plantilla de herramienta ---------- */
 function mk(el,o){
  el.innerHTML=`<div class=pad><h3>${esc(o.t)}</h3><p>${esc(o.d)}</p>
- <div class=osrow><input id=qi placeholder="${esc(o.ph||'')}" autocapitalize=none spellcheck=false><button class=pb id=go>Ejecutar</button></div>
- <div class=acts style="margin-bottom:10px">${o.py?'<button class=gb id=dz>Descargar .zip</button>':''}<span class=xpb id=xp style="align-self:center;color:var(--mut);font-size:12px"></span></div>
+ <div class=osrow><input id=qi placeholder="${esc(o.ph||'')}" autocapitalize=none spellcheck=false><button class="pb" id=go>Ejecutar</button></div>
+ <div class=acts style="margin-bottom:10px">${o.py?'<button class=gb id=dz>Descargar .zip</button>':''}<span id=xp style="align-self:center;color:var(--mut);font-size:12px"></span></div>
  <div id=o></div></div>`;
  const inp=$('#qi',el),out=$('#o',el);
  const go=async()=>{const v=inp.value.trim();if(!v)return;out.innerHTML='<p class=sub>Consultando…</p>';
   try{await o.run(v,out,el)}catch(e){out.innerHTML=`<div class=iss style="border-left:3px solid #ff3b46">${esc(e.message)}</div>`}};
- $('#go',el).onclick=go;inp.onkeydown=e=>{if(e.key=='Enter')go()};
- if(o.py)$('#dz',el).onclick=()=>{dl(pack(o.py[0],o.py[1],o.t,o.d,o.py[2]),'noxyplont_'+o.py[0]+'.zip');snd&&snd(600,900)};
+ $('#go',el).onclick=go;inp.onkeydown=e=>{if(e.key==='Enter')go()};
+ if(o.py)$('#dz',el).onclick=()=>{dl(pack(o.py[0],o.py[1],o.t,o.d,o.py[2]),'noxyplont_'+o.py[0]+'.zip');if(typeof snd==='function')snd(600,900)};
 }
 
-/* ---------- herramientas ---------- */
 const T={
  ip:el=>mk(el,{t:'IP Dossier',d:'Geo, ISP, ASN, prefijo BGP, PTR, puertos y CVEs de una IP o dominio.',ph:'8.8.8.8',
   py:['ip','# Noxy Plont - IP Dossier\nimport sys, json, requests\n\nip = sys.argv[1]\nif not ip.replace(".", "").isdigit():\n    ip = requests.get(f"https://dns.google/resolve?name={ip}&type=A").json()["Answer"][0]["data"]\ng = requests.get(f"https://ipwho.is/{ip}").json()\nprint(json.dumps({k: g.get(k) for k in ("ip","country","region","city","latitude","longitude","connection")}, indent=2))\nfor u in (f"https://internetdb.shodan.io/{ip}", f"https://api.bgpview.io/ip/{ip}"):\n    try: print(json.dumps(requests.get(u).json(), indent=2))\n    except Exception as e: print("fallo", u, e)\n','python noxyplont_ip.py 8.8.8.8'],
@@ -1488,7 +1485,7 @@ const T={
     +`<div class=sec2>MX</div><div class=tags>${(mx.Answer||[]).map(x=>`<span>${esc(x.data)}</span>`).join('')||'—'}</div>`;SHOT(el,2)}}),
 
  user:el=>mk(el,{t:'Username Sweep',d:'Barrido de un alias en 35 plataformas.',ph:'usuario',
-  run:async(v,o)=>{if(typeof sherlock!=='function')throw Error('Módulo no disponible.');
+  run:async(v)=>{if(typeof sherlock!=='function')throw Error('Módulo no disponible.');
    el.innerHTML='';sherlock(el);$('#u',el).value=v;setTimeout(()=>$('#go',el).click(),60)}}),
 
  pass:el=>mk(el,{t:'Password Leak Check',d:'Cuenta cuántas filtraciones públicas tienen una contraseña (k-anonymity).',ph:'contraseña',
@@ -1511,7 +1508,7 @@ const T={
  web:el=>mk(el,{t:'Web Fingerprint',d:'Cabeceras, robots.txt, sitemap, security.txt y tecnologías del sitio.',ph:'ejemplo.com',
   py:['web','# Noxy Plont - Web Fingerprint\nimport sys, requests\n\nh = {"User-Agent": "Mozilla/5.0"}\nu = sys.argv[1]\nif not u.startswith("http"): u = "https://" + u\nr = requests.get(u, headers=h, timeout=15, allow_redirects=True)\nprint(r.status_code)\nfor k, v in r.headers.items(): print(k + ":", v)\nfor p in ("/robots.txt", "/sitemap.xml", "/.well-known/security.txt"):\n    try:\n        x = requests.get(u + p, headers=h, timeout=10)\n        print(p, x.status_code, len(x.text))\n    except Exception as e: print(p, e)\n','python noxyplont_web.py ejemplo.com'],
   run:async(v,o)=>{const u=/^https?:\/\//.test(v)?v:'https://'+v;
-   const [h,rob,sec]=await Promise.all([GT(u).then(()=>({})).catch(()=>({})),GT(u.replace(/\/$/,'')+'/robots.txt').catch(()=>''),GT(u.replace(/\/$/,'')+'/.well-known/security.txt').catch(()=>'')]);
+   const [rob,sec]=await Promise.all([GT(u.replace(/\/$/,'')+'/robots.txt').catch(()=>''),GT(u.replace(/\/$/,'')+'/.well-known/security.txt').catch(()=>'')]);
    const tech=[['WordPress',/wp-content|wp-json/i],['Shopify',/cdn\.shopify/i],['React',/__NEXT_DATA__|react/i],['Cloudflare',/cloudflare/i],['nginx',/nginx/i],['Apache',/apache/i]];
    o.innerHTML=KV([['URL',u],['robots.txt',rob?rob.length+' bytes':'—'],['security.txt',sec?'existe':'—']])
     +`<div class=sec2>Señales</div><div class=tags>${tech.filter(([,r])=>r.test(rob+sec)).map(([n])=>`<span>${n}</span>`).join('')||'—'}</div>`
@@ -1531,35 +1528,49 @@ const T={
    o.innerHTML=[['Archivos expuestos',`https://www.google.com/search?q=site:${t}+(ext:pdf OR ext:xls OR ext:env OR ext:sql)`],['Paneles',`https://www.google.com/search?q=site:${t}+inurl:(admin OR login OR panel)`],['Correos',`https://www.google.com/search?q=%22@${t}%22`],['GitHub secretos',`https://github.com/search?q=${t}+gsk_&type=code`],['Shodan',`https://www.shodan.io/search?query=${t}`],['crt.sh',`https://crt.sh/?q=%25.${t}`]].map(([n,u])=>`<a class=iss style="display:block;text-decoration:none;color:inherit" target=_blank rel=noopener href="${u}"><b>${n}</b><div class=sub style="margin:0;word-break:break-all">${esc(u)}</div></a>`).join('');SHOT(el,1)}})
 };
 
-/* ---------- gate + hub ---------- */
-const PW='xPlont';
+const PW='xplont';
 const locked=()=>!GET('plont_ok',0);
 function gate(el,after){
  el.innerHTML=`<div class=pgate><div class=ic3>${I('shield',26)}</div><h2>Plont</h2>
  <p>Herramientas de reconocimiento y doxeo. Acceso restringido.</p>
- <input id=pw type=password placeholder="contraseña" autocomplete=off><div style="height:10px"></div>
- <button class=pb id=ok style="width:100%">Entrar</button><div id=pe class=sub style="margin-top:10px"></div></div>`;
- const t=$('#pw',el);t.focus();
- const tryIt=()=>{if(t.value===PW){SET('plont_ok',1);snd&&snd(600,1000);after?after():hub(el)}else{$('#pe',el).textContent='Contraseña incorrecta.';t.value='';t.focus()}};
- $('#ok',el).onclick=tryIt;t.onkeydown=e=>{if(e.key=='Enter')tryIt()};
+ <input id=pgpw type=password placeholder="contraseña" autocomplete=off><div style="height:10px"></div>
+ <button class=pb id=pgok style="width:100%">Entrar</button><div id=pgpe class=sub style="margin-top:10px"></div></div>`;
+ const t=$('#pgpw',el);t.focus();
+ const tryIt=()=>{if(t.value.trim().toLowerCase()===PW){SET('plont_ok',1);if(typeof snd==='function')snd(600,1000);after?after():hub(el)}
+  else{$('#pgpe',el).textContent='Contraseña incorrecta.';t.value='';t.focus()}};
+ $('#pgok',el).onclick=tryIt;t.onkeydown=e=>{if(e.key==='Enter')tryIt()};
 }
-const HUB=[['ip','IP Dossier','eye'],['dom','Domain Recon','search'],['sub','Subdomain Hunter','users'],['mail','Email Harvester','mail' in {}?'mail':'user'],['user','Username Sweep','user'],['pass','Password Leak','key'],['hash','Hash Cracker','braces'],['web','Web Fingerprint','tool'],['meta','EXIF','eye'],['dork','Dork Builder','search']];
+const HUB=[
+ {id:'ip',n:'IP Dossier',ic:'eye',d:'Geo, ASN, puertos y CVEs.',py:1},
+ {id:'dom',n:'Domain Recon',ic:'search',d:'RDAP, DNS y subdominios.',py:1},
+ {id:'sub',n:'Subdomain Hunter',ic:'users',d:'Certificados + fuerza bruta DNS.',py:1},
+ {id:'mail',n:'Email Harvester',ic:'mail',d:'Gravatar, MX y validación.',py:1},
+ {id:'user',n:'Username Sweep',ic:'user',d:'35 plataformas de una vez.'},
+ {id:'pass',n:'Password Leak',ic:'key',d:'Filtraciones por k-anonymity.',py:1},
+ {id:'hash',n:'Hash Cracker',ic:'braces',d:'Identifica y rompe hashes.',py:1},
+ {id:'web',n:'Web Fingerprint',ic:'tool',d:'robots, security.txt, tecnologías.',py:1},
+ {id:'meta',n:'EXIF',ic:'cam',d:'Cámara, fecha y GPS de una foto.'},
+ {id:'dork',n:'Dork Builder',ic:'search',d:'Dorks de Google, GitHub y Shodan.'}
+];
 function hub(el){
- el.innerHTML=`<div class=pad><div class=plh><h3 style="margin:0">Plont</h3><button class="gb lk" id=lk>Bloquear</button></div>
- <p>${HUB.length} herramientas. Las que llevan sello <b>py</b> se descargan como .zip con script y README.</p><div class=plgrid id=g></div></div>`;
- $('#lk',el).onclick=()=>{SET('plont_ok',0);gate(el)};
- $('#g',el).innerHTML=HUB.map(([id,n,ic])=>`<button class=plc data-id="${id}">${T[id]&&T[id].py?'<span class=tagp>py</span>':''}<span class=ic2>${I(ic,18)}</span><span><b>${n}</b><small>${(T[id]&&T[id].desc)||''}</small></span></button>`).join('');
+ el.innerHTML=`<div class=pad><div class=plh><h3 style="margin:0">Plont</h3><button class="gb plk" id=plk>Bloquear</button></div>
+ <p>${HUB.length} herramientas. Las que llevan sello <b>py</b> se descargan como .zip con script y README.</p><div class=plgrid id=plg></div></div>`;
+ $('#plk',el).onclick=()=>{SET('plont_ok',0);gate(el)};
+ $('#plg',el).innerHTML=HUB.map(x=>`<button class=plc data-id="${x.id}">${x.py?'<span class=tagp>py</span>':''}<span class=ic2>${I(x.ic,18)}</span><span><b>${x.n}</b><small>${x.d}</small></span></button>`).join('');
  $$('.plc',el).forEach(b=>b.onclick=()=>openTool(b.dataset.id));
 }
 const openTool=id=>{
- const go=k=>{const p=document.querySelector('#nv .nv');if(!p)return;/* proxy de navegación */
-  if(!document.querySelector('#tl')){p.dataset.k='home';try{p.onclick()}catch(e){}}
-  setTimeout(()=>{const tile=document.querySelector('#tl .tile');if(tile){tile.dataset.id='pl_'+id;tile.onclick()}else{const q=document.querySelector('#nv .nv');q.dataset.k='plont';q.onclick();setTimeout(()=>openTool(id),300)}},130)};
- go();
+ const nav0=document.querySelector('#nv .nv');if(!nav0)return;
+ if(!document.querySelector('#tl')){nav0.dataset.k='home';nav0.click()}
+ setTimeout(()=>{
+  const tile=document.querySelector('#tl .tile');
+  if(tile){tile.dataset.id='pl_'+id;tile.click();return}
+  const q=document.querySelector('#nv .nv');if(q){q.dataset.k='plont';q.click();setTimeout(()=>openTool(id),300)}
+ },140);
 };
 
-/* ---------- nav ---------- */
 const NAV=[['home','Inicio','home'],['per','Perfiles','user'],['pro','Proyectos','braces'],['com','Comunidad','users'],['plont','Plont','shield']];
+const navSig=()=>[...document.querySelectorAll('#nv .nv')].map(b=>b.dataset.k).join('|');
 let navLock=0,proxyNv=null;
 function buildNav(){
  const nv=$('#nv');if(!nv)return;navLock=1;
@@ -1569,31 +1580,30 @@ function buildNav(){
  $$('.nv',nv).forEach(b=>{const k=b.dataset.k;
   b.onclick=()=>{
    if(proxyNv){proxyNv.dataset.k=k;try{proxyNv.onclick()}catch(e){}}
-   else{const p=document.querySelector('.nv');if(p){p.dataset.k=k;p.onclick()}}
-   $('#ttl').textContent=k=='plont'?'Plont':b.dataset.l;
-   if(k=='plont')setTimeout(()=>{const v=$('#view');if(!v)return;locked()?gate(v):hub(v)},150)}});
- requestAnimationFrame(()=>navLock=0)}
-new MutationObserver(()=>{if(!navLock)buildNav()}).observe(document.body,{childList:true,subtree:true});
+   const ttl=$('#ttl');if(ttl)ttl.textContent=k=='plont'?'Plont':b.dataset.l;
+   if(k=='plont')setTimeout(()=>{const v=$('#view');if(v)(locked()?gate(v):hub(v))},160)}});
+ requestAnimationFrame(()=>{navLock=0});
+}
+new MutationObserver(()=>{
+ if(navLock)return;
+ if(navSig()===NAV.map(n=>n[0]).join('|'))return;
+ buildNav();
+}).observe(document.body,{childList:true,subtree:true});
 
-/* ---------- Plont Community en Comunidad ---------- */
 const card=()=>`<div id=plontcom class=iss style="display:flex;gap:12px;align-items:center;justify-content:space-between;margin-top:14px"><div><b>Plont Community</b><div class=sub style="margin:0">English server · scripts, drops and support</div></div><a class=pb style="text-decoration:none;flex:none" href="https://discord.gg/9CTngA9qCK" target=_blank rel=noopener>Join</a></div>`;
 setInterval(()=>{const v=$('#view');if(!v)return;
- const on=document.querySelector('.nv.on')?.dataset.k;
- if(on=='com'&&!$('#plontcom'))v.insertAdjacentHTML('beforeend',card())},700);
+ if(document.querySelector('.nv.on')?.dataset.k!=='com')return;
+ if(!$('#plontcom'))v.insertAdjacentHTML('beforeend',card())},800);
 
-/* ---------- registro de apps Plont ---------- */
-const PLONTCAT='Plont';
 Object.entries(T).forEach(([id,f])=>{
- APPS.push({id:'pl_'+id,name:(f.desc?'':'')+id,ic:'shield',desc:f.desc||'',cat:PLONTCAT,
+ const meta=HUB.find(h=>h.id==id)||{};
+ APPS.push({id:'pl_'+id,name:meta.n||id,ic:meta.ic||'shield',desc:meta.d||'',cat:'Plont',
   r:el=>{if(locked())return gate(el,()=>f(el));f(el)},tech:['OSINT']})});
-/* nombres bonitos */
-[['ip','IP Dossier'],['dom','Domain Recon'],['sub','Subdomain Hunter'],['mail','Email Harvester'],['user','Username Sweep'],['pass','Password Leak Check'],['hash','Hash ID + Cracker'],['web','Web Fingerprint'],['meta','EXIF Reader'],['dork','Dork Builder']]
- .forEach(([id,n])=>{const a=APPS.find(x=>x.id=='pl_'+id);if(a)a.name=n});
 
-/* ================= LUAU STUDIO (reescrito) ================= */
+/* ================= LUAU STUDIO ================= */
 function luau(el){
- const PRE=[
- {n:'Ventana con botones',c:`local gui = Instance.new("ScreenGui")
+const PRE=[
+{n:'Ventana con botones',c:`local gui = Instance.new("ScreenGui")
 gui.Parent = game:GetService("CoreGui")
 local w = Instance.new("Frame")
 w.Size = UDim2.new(0, 300, 0, 210)
@@ -1620,7 +1630,7 @@ b.MouseButton1Click:Connect(function()
   print("pulsado " .. n)
 end)
 print("GUI cargada")`},
- {n:'Bucle con task.wait',c:`local gui = Instance.new("ScreenGui")
+{n:'Bucle con task.wait',c:`local gui = Instance.new("ScreenGui")
 gui.Parent = game:GetService("CoreGui")
 local l = Instance.new("TextLabel")
 l.Size = UDim2.new(0, 200, 0, 40)
@@ -1636,129 +1646,129 @@ while true do
   l.Text = "tick " .. i
   task.wait(1)
 end`},
- {n:'Stubs de executor',c:`print(identifyexecutor())
+{n:'Stubs de executor',c:`print(identifyexecutor())
 print(typeof(getgenv()), typeof(hookmetamethod), typeof(firesignal))`}];
- el.innerHTML=`<div style="display:flex;flex-direction:column;height:100%">
- <div style="display:flex;gap:8px;padding:10px;border-bottom:1px solid var(--bd);flex-wrap:wrap">
- <select id=ps style="width:auto;margin:0;padding:8px"><option value="">Ejemplos…</option>${PRE.map((p,i)=>`<option value=${i}>${esc(p.n)}</option>`).join('')}</select>
- <button class=pb id=run>Ejecutar</button><button class=gb id=stop>Detener</button><button class=gb id=clr>Limpiar</button>
- <span id=st style="margin-left:auto;color:var(--mut);font-size:12px;align-self:center">listo</span></div>
- <div style="flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px">
- <textarea id=cd spellcheck=false style="min-height:0;font:12.5px/1.6 var(--m);white-space:pre;resize:none;padding:12px;border-radius:12px;background:#0b0a0c"></textarea>
- <div style="display:flex;flex-direction:column;gap:8px;min-height:0">
- <div class=lsview style="flex:1;min-height:0;position:relative;overflow:hidden;border:1px solid var(--bd);border-radius:12px;background:linear-gradient(160deg,#1b2330,#0e1218)"><div id=vp style="position:absolute;inset:0;overflow:hidden"></div><div class=lsempty id=em>sin GUI todavía</div></div>
- <div id=cn style="height:130px;overflow:auto;background:#000;border:1px solid var(--bd);border-radius:12px;padding:8px;font:12px/1.5 var(--m);color:#c9c2c4"></div></div></div></div>`;
- const cn=$('#cn',el),vp=$('#vp',el),em=$('#em',el),cd=$('#cd',el),st=$('#st',el);
- let running=0,timer=null,co=null,coRef=null,curL=null,ins=0,lua=null,lauxlib=null;
- const log=(t,c)=>{const d=document.createElement('div');d.textContent=t;d.style.color=c=='e'?'#ff6b74':c=='w'?'#ffc35b':c=='m'?'#8f7bff':'#c9c2c4';cn.append(d);cn.scrollTop=cn.scrollHeight;while(cn.childElementCount>200)cn.firstElementChild.remove()};
- const s2=v=>v==null?'nil':typeof v==='object'?(v.__inst?v.cn||'Instance':v.__rbx||'table'):String(v);
- const CH={Instance:[],GuiObject:['Instance'],ScreenGui:['Instance'],Frame:['GuiObject'],TextLabel:['GuiObject'],TextButton:['GuiObject'],TextBox:['GuiObject'],Folder:['Instance'],UIComponent:['Instance'],UICorner:['UIComponent'],UIStroke:['UIComponent'],UIPadding:['UIComponent'],UIListLayout:['UIComponent']};
- const PR={Instance:['Name','Parent'],GuiObject:['Visible','Size','Position','BackgroundColor3','BackgroundTransparency','BorderSizePixel','ZIndex','Text','TextColor3','TextSize','TextXAlignment','TextYAlignment','PlaceholderText'],UICorner:['CornerRadius'],UIStroke:['Color','Thickness','Transparency'],UIListLayout:['Padding','FillDirection']};
- const DF={Size:()=>({__rbx:'U2',xs:0,xo:100,ys:0,yo:100}),Position:()=>({__rbx:'U2',xs:0,xo:0,ys:0,yo:0}),BackgroundColor3:()=>({__rbx:'C3',r:1,g:1,b:1}),BackgroundTransparency:0,BorderSizePixel:1,Visible:true,ZIndex:1,Text:'',TextColor3:()=>({__rbx:'C3',r:0,g:0,b:0}),TextSize:14,TextXAlignment:'Center',TextYAlignment:'Center',Color:()=>({__rbx:'C3',r:0,g:0,b:0}),Thickness:1,Transparency:0,CornerRadius:()=>({__rbx:'UD',s:0,o:0}),Padding:()=>({__rbx:'UD',s:0,o:0}),FillDirection:'Vertical'};
- const sig=o=>o.__s||(o.__s={l:[],Connect(f){if(typeof f==='function')this.l.push(f);return{Disconnect(){}}},Fire(...a){this.l.slice().forEach(f=>{try{f(...a)}catch(e){}})}});
- const setP=(o,p)=>{if(o.parent)o.parent.ch=o.parent.ch.filter(x=>x!==o);o.parent=p||null;if(p&&p.ch&&!p.ch.includes(o))p.ch.push(o);chg()};
- function ni(c){if(!CH[c])c='Frame';const o={__inst:1,cn:c,ch:[],_p:{},parent:null,dead:0};
-  const ps=new Set();(CH[c]||[]).forEach(k=>(PR[k]||[]).forEach(p=>ps.add(p)));
-  ps.forEach(p=>Object.defineProperty(o,p,{enumerable:true,get(){if(p in this._p)return this._p[p];const d=DF[p];return typeof d==='function'?d():d},set(v){this._p[p]=v;p==='Parent'?setP(this,v):chg()}}));
-  Object.defineProperty(o,'Name',{enumerable:true,get(){return this._p.Name||c},set(v){this._p.Name=v}});
-  o.Destroy=()=>{setP(o,null);o.dead=1;chg()};o.GetChildren=()=>o.ch.slice();o.FindFirstChild=n=>o.ch.find(x=>x.Name===n)||null;
-  o.WaitForChild=n=>o.FindFirstChild(n);o.IsA=x=>x===c||(CH[c]||[]).includes(x);
-  ['MouseButton1Click','MouseButton1Down','Activated','InputBegan'].forEach(e=>Object.defineProperty(o,e,{get(){return sig(o)[e]||(sig(o)[e]={l:[],Connect(f){this.l.push(f);return{Disconnect(){}}},Fire(...a){this.l.slice().forEach(x=>{try{x(...a)}catch(e){}})}})}}));
-  return o}
- const SV={};
- const svc=n=>SV[n]||(SV[n]=Object.assign(ni('Folder'),{Name:n}));
- const game={ClassName:'DataModel',PlaceId:1,GetService:svc,Players:{LocalPlayer:{Name:'NoxyPlayer'}}};
- const VIS=new Set(['ScreenGui','Frame','TextLabel','TextButton','TextBox']);
- const C3=(r,g,b)=>({__rbx:'C3',r:r||0,g:g||0,b:b||0});
- const col=c=>c&&c.__rbx?`rgba(${Math.round(c.r*255)},${Math.round(c.g*255)},${Math.round(c.b*255)},`:'rgba(255,255,255,';
- let raf=null;function chg(){if(raf)return;raf=requestAnimationFrame(()=>{raf=null;draw()})}
- function roots(){const o=[...svc('CoreGui').ch];const pg=game.Players.LocalPlayer.PlayerGui;if(pg)o.push(...pg.ch);return o.filter(x=>x.cn==='ScreenGui'&&!x.dead)}
- function draw(){vp.innerHTML='';roots().forEach(r=>{const d=b(r);if(d)vp.append(d)});em.style.display=vp.childElementCount?'none':'grid'}
- function b(i){if(!VIS.has(i.cn)||i._p.Visible===false)return null;
-  if(i.cn==='ScreenGui'){const d=document.createElement('div');d.style.cssText='position:absolute;inset:0';i.ch.forEach(c=>{const x=b(c);if(x)d.append(x)});return d}
-  const btn=i.cn==='TextButton',d=document.createElement(btn?'button':'div');
-  d.style.cssText='position:absolute;box-sizing:border-box;display:flex;overflow:hidden;font-family:Inter,system-ui,sans-serif';
-  const p=i.Position,s=i.Size;
-  d.style.left=`calc(${p.xs*100}% + ${p.xo}px)`;d.style.top=`calc(${p.ys*100}% + ${p.yo}px)`;
-  d.style.width=`calc(${s.xs*100}% + ${s.xo}px)`;d.style.height=`calc(${s.ys*100}% + ${s.yo}px)`;
-  d.style.background=col(i.BackgroundColor3)+(1-(i.BackgroundTransparency||0))+')';
-  if(i.BorderSizePixel>0)d.style.border='1px solid #ffffff22';
-  if(i._p.Text!==undefined){d.style.color=col(i.TextColor3)+'1)';d.style.fontSize=(i.TextSize||14)+'px';
-   d.style.justifyContent=({Left:'flex-start',Center:'center',Right:'flex-end'})[i.TextXAlignment]||'center';
-   d.style.alignItems='center';d.innerHTML=esc(i._p.Text||'')}
-  i.ch.forEach(c=>{if(c.cn==='UICorner')d.style.borderRadius=(c.CornerRadius.o||0)+'px';
-   else if(c.cn==='UIStroke')d.style.border=`${c.Thickness||1}px solid ${col(c.Color)}${1-(c.Transparency||0)})`});
-  if(btn){d.style.cursor='pointer';d.onclick=()=>{sig(i).MouseButton1Click?.Fire();log('clic '+(i._p.Name||'boton'),'i')}}
-  i.ch.forEach(c=>{if(!['UICorner','UIStroke','UIListLayout','UIPadding'].includes(c.cn)){const x=b(c);if(x)d.append(x)}});
-  return d}
- const TR=s=>{let x=s;
-  x=x.replace(/\blocal\s+([A-Za-z_]\w*)\s*:\s*[A-Za-z_][\w.]*/g,'local $1');
-  x=x.replace(/([A-Za-z_][\w.\[\]]*)\s*(\.\.|\+|-|\*|\/)=/g,'$1 = $1 $2 ');
-  return x};
- function hookF(L){ins+=20000;if(ins>2e6){lua.lua_pushstring(L,lua.to_luastring('bucle sin task.wait(): cortado'));lua.lua_error(L)}}
- function finish(){running=0;st.textContent='terminado'}
- function stop(){clearTimeout(timer);timer=null;co=null;coRef=null;if(running)log('— detenido —','m');finish()}
- function status(){try{lua.lua_getglobal(curL,lua.to_luastring('coroutine'));lua.lua_getfield(curL,-1,lua.to_luastring('status'));lua.lua_remove(curL,-2);
-   lua.lua_rawgeti(curL,lua.LUA_REGISTRYINDEX,coRef);
-   if(lua.lua_pcall(curL,1,1,0)!==lua.LUA_OK){lua.lua_settop(curL,lua.lua_gettop(curL)-1);return'dead'}
-   const s=lua.lua_tojsstring(curL,-1);lua.lua_settop(curL,lua.lua_gettop(curL)-1);return s}catch(e){return'dead'}}
- function resume(){
-  if(!co||!running)return;if(!el.isConnected)return;
-  const L=co;curL=L;let base=0;
-  try{base=lua.lua_gettop(L);if(lua.lua_sethook&&lua.LUA_MASKCOUNT)lua.lua_sethook(L,hookF,lua.LUA_MASKCOUNT,20000);ins=0}catch(e){}
-  try{
-   lua.lua_getglobal(L,lua.to_luastring('coroutine'));
-   lua.lua_getfield(L,-1,lua.to_luastring('resume'));lua.lua_remove(L,-2);
-   lua.lua_rawgeti(L,lua.LUA_REGISTRYINDEX,coRef);
-   const okc=lua.lua_pcall(L,1,lua.LUA_MULTRET,0);
-   try{lua.lua_sethook&&lua.lua_sethook(L,null,0,0)}catch(e){}
-   if(okc!==lua.LUA_OK){log(lua.lua_tojsstring(L,-1),'e');lua.lua_settop(L,base);return finish()}
-   if(!lua.lua_toboolean(L,base+1)){log(lua.lua_tojsstring(L,base+2),'e');lua.lua_settop(L,base);return finish()}
-   if(status()==='dead'){lua.lua_settop(L,base);return finish()}
-   const w=lua.lua_tonumber(L,base+2)||0;lua.lua_settop(L,base);
-   timer=setTimeout(resume,Math.min(Math.max(w*1000,0),3000))
-  }catch(e){log('error interno: '+e.message,'e');finish()}}
- const FB=['https://cdn.jsdelivr.net/npm/fengari-web@0.1.4/dist/fengari-web.js','https://unpkg.com/fengari-web@0.1.4/dist/fengari-web.js'];
- const load=()=>new Promise((ok,no)=>{let i=0;const nx=()=>{if(window.fengari)return ok();
-  if(i>=FB.length)return no(Error('no cargué el motor Lua (¿bloqueaste el CDN?)'));
-  const s=document.createElement('script');s.src=FB[i++];s.onload=()=>ok();s.onerror=nx;document.head.append(s)};nx()});
- $('#run',el).onclick=async()=>{if(running)stop();const code=cd.value;if(!code.trim())return;
-  log('▶ ejecutando','m');running=1;st.textContent='ejecutando';
-  try{await load()}catch(e){log(e.message,'e');return finish()}
-  lua=window.fengari.lua;lauxlib=window.fengari.lauxlib;
-  const L=lauxlib.luaL_newstate();window.fengari.lualib.luaL_openlibs(L);
-  const G=(n,v)=>{window.fengari.interop.push(L,v);lua.lua_setglobal(L,lua.to_luastring(n))};
-  G('print',L=>{const a=[];for(let i=1;i<=lua.lua_gettop(L);i++)a.push(s2(window.fengari.interop.tojs(L,i)));log(a.join('\t'))});
-  G('warn',L=>{const a=[];for(let i=1;i<=lua.lua_gettop(L);i++)a.push(s2(window.fengari.interop.tojs(L,i)));log(a.join('\t'),'w')});
-  G('typeof',L=>{const v=window.fengari.interop.tojs(L,1);lua.lua_pushstring(L,lua.to_luastring(v&&v.__inst?'Instance':(v&&v.__rbx)||typeof v));return 1});
-  const y=L=>{const n=lua.lua_tonumber(L,1)||0;lua.lua_pushnumber(L,n);return lua.lua_yield(L,1)};
-  G('wait',y);G('task',{wait:y,spawn:(L)=>{lauxlib.lua_pushvalue(L,1);lua.lua_pcall(L,0,0,0);return 0}});
-  G('Instance',{new:ni});
-  G('Color3',{new:C3,fromRGB:(r,g,b)=>C3(r/255,g/255,b/255)});
-  G('UDim2',{new:(a,b,c,d)=>({__rbx:'U2',xs:a,xo:b,ys:c,yo:d}),fromOffset:(x,y)=>({__rbx:'U2',xs:0,xo:x,ys:0,yo:y}),fromScale:(x,y)=>({__rbx:'U2',xs:x,xo:0,ys:y,yo:0})});
-  G('UDim',{new:(s,o)=>({__rbx:'UD',s,o})});
-  G('Enum',new Proxy({},{get:(t,k)=>new Proxy({},{get:(_,n)=>({Name:n})})}));
-  G('game',game);G('identifyexecutor',()=>'Delta');G('getgenv',()=>({}));G('firesignal',(s,...a)=>s&&s.Fire&&s.Fire(...a));
-  G('hookmetamethod',(a,b,c)=>c);G('getgc',()=>({}));
-  const src=TR(code);
-  if(lauxlib.luaL_loadstring(L,lua.to_luastring(src))!==lua.LUA_OK){log(lua.lua_tojsstring(L,-1),'e');return finish()}
-  lua.lua_getglobal(L,lua.to_luastring('coroutine'));lua.lua_getfield(L,-1,lua.to_luastring('create'));lua.lua_remove(L,-2);
-  lauxlib.luaL_loadstring(L,lua.to_luastring(src));
-  if(lua.lua_pcall(L,1,1,0)!==lua.LUA_OK){log(lua.lua_tojsstring(L,-1),'e');return finish()}
-  co=lua.lua_tothread(L,-1);coRef=lauxlib.luaL_ref(L,lua.LUA_REGISTRYINDEX);
-  resume()};
- $('#stop',el).onclick=stop;
- $('#clr',el).onclick=()=>{Object.keys(SV).forEach(k=>delete SV[k]);vp.innerHTML='';em.style.display='grid';log('GUI limpiada','m')};
- $('#ps',el).onchange=e=>{const p=PRE[e.target.value];if(p){cd.value=p.c;e.target.value=''}};
- cd.value=PRE[0].c;log('Lua 5.3 real con API de Roblox simulada','m');
+el.innerHTML=`<div style="display:flex;flex-direction:column;height:100%">
+<div style="display:flex;gap:8px;padding:10px;border-bottom:1px solid var(--bd);flex-wrap:wrap">
+<select id=ps style="width:auto;margin:0;padding:8px"><option value="">Ejemplos…</option>${PRE.map((p,i)=>`<option value=${i}>${esc(p.n)}</option>`).join('')}</select>
+<button class=pb id=run>Ejecutar</button><button class=gb id=stop>Detener</button><button class=gb id=clr>Limpiar</button>
+<span id=st style="margin-left:auto;color:var(--mut);font-size:12px;align-self:center">listo</span></div>
+<div style="flex:1;min-height:0;display:grid;grid-template-columns:1fr 1fr;gap:10px;padding:10px">
+<textarea id=cd spellcheck=false style="min-height:0;font:12.5px/1.6 var(--m);white-space:pre;resize:none;padding:12px;border-radius:12px;background:#0b0a0c"></textarea>
+<div style="display:flex;flex-direction:column;gap:8px;min-height:0">
+<div class=lsview style="flex:1;min-height:0;position:relative;overflow:hidden;border:1px solid var(--bd);border-radius:12px;background:linear-gradient(160deg,#1b2330,#0e1218)"><div id=vp style="position:absolute;inset:0;overflow:hidden"></div><div class=lsempty id=em>sin GUI todavía</div></div>
+<div id=cn style="height:130px;overflow:auto;background:#000;border:1px solid var(--bd);border-radius:12px;padding:8px;font:12px/1.5 var(--m);color:#c9c2c4"></div></div></div></div>`;
+const cn=$('#cn',el),vp=$('#vp',el),em=$('#em',el),cd=$('#cd',el),st=$('#st',el);
+let running=0,timer=null,co=null,coRef=null,curL=null,ins=0,lua=null,lauxlib=null;
+const log=(t,c)=>{const d=document.createElement('div');d.textContent=t;d.style.color=c=='e'?'#ff6b74':c=='w'?'#ffc35b':c=='m'?'#8f7bff':'#c9c2c4';cn.append(d);cn.scrollTop=cn.scrollHeight;while(cn.childElementCount>200)cn.firstElementChild.remove()};
+const s2=v=>v==null?'nil':typeof v==='object'?(v.__inst?v.cn||'Instance':v.__rbx||'table'):String(v);
+const CH={Instance:[],GuiObject:['Instance'],ScreenGui:['Instance'],Frame:['GuiObject'],TextLabel:['GuiObject'],TextButton:['GuiObject'],TextBox:['GuiObject'],Folder:['Instance'],UIComponent:['Instance'],UICorner:['UIComponent'],UIStroke:['UIComponent'],UIPadding:['UIComponent'],UIListLayout:['UIComponent']};
+const PR={Instance:['Name','Parent'],GuiObject:['Visible','Size','Position','BackgroundColor3','BackgroundTransparency','BorderSizePixel','ZIndex','Text','TextColor3','TextSize','TextXAlignment','TextYAlignment','PlaceholderText'],UICorner:['CornerRadius'],UIStroke:['Color','Thickness','Transparency'],UIListLayout:['Padding','FillDirection']};
+const DF={Size:()=>({__rbx:'U2',xs:0,xo:100,ys:0,yo:100}),Position:()=>({__rbx:'U2',xs:0,xo:0,ys:0,yo:0}),BackgroundColor3:()=>({__rbx:'C3',r:1,g:1,b:1}),BackgroundTransparency:0,BorderSizePixel:1,Visible:true,ZIndex:1,Text:'',TextColor3:()=>({__rbx:'C3',r:0,g:0,b:0}),TextSize:14,TextXAlignment:'Center',TextYAlignment:'Center',Color:()=>({__rbx:'C3',r:0,g:0,b:0}),Thickness:1,Transparency:0,CornerRadius:()=>({__rbx:'UD',s:0,o:0}),Padding:()=>({__rbx:'UD',s:0,o:0}),FillDirection:'Vertical'};
+const sig=o=>o.__s||(o.__s={l:[],Connect(f){if(typeof f==='function')this.l.push(f);return{Disconnect(){}}},Fire(...a){this.l.slice().forEach(f=>{try{f(...a)}catch(e){}})}});
+const setP=(o,p)=>{if(o.parent)o.parent.ch=o.parent.ch.filter(x=>x!==o);o.parent=p||null;if(p&&p.ch&&!p.ch.includes(o))p.ch.push(o);chg()};
+function ni(c){if(!CH[c])c='Frame';const o={__inst:1,cn:c,ch:[],_p:{},parent:null,dead:0};
+ const ps=new Set();(CH[c]||[]).forEach(k=>(PR[k]||[]).forEach(p=>ps.add(p)));
+ ps.forEach(p=>Object.defineProperty(o,p,{enumerable:true,get(){if(p in this._p)return this._p[p];const d=DF[p];return typeof d==='function'?d():d},set(v){this._p[p]=v;p==='Parent'?setP(this,v):chg()}}));
+ Object.defineProperty(o,'Name',{enumerable:true,get(){return this._p.Name||c},set(v){this._p.Name=v}});
+ o.Destroy=()=>{setP(o,null);o.dead=1;chg()};o.GetChildren=()=>o.ch.slice();o.FindFirstChild=n=>o.ch.find(x=>x.Name===n)||null;
+ o.WaitForChild=n=>o.FindFirstChild(n);o.IsA=x=>x===c||(CH[c]||[]).includes(x);
+ ['MouseButton1Click','MouseButton1Down','Activated','InputBegan'].forEach(e=>Object.defineProperty(o,e,{get(){return sig(o)[e]||(sig(o)[e]={l:[],Connect(f){this.l.push(f);return{Disconnect(){}}},Fire(...a){this.l.slice().forEach(x=>{try{x(...a)}catch(e){}})}})}}));
+ return o}
+const SV={};
+const svc=n=>SV[n]||(SV[n]=Object.assign(ni('Folder'),{Name:n}));
+const game={ClassName:'DataModel',PlaceId:1,GetService:svc,Players:{LocalPlayer:{Name:'NoxyPlayer'}}};
+const VIS=new Set(['ScreenGui','Frame','TextLabel','TextButton','TextBox']);
+const C3=(r,g,b)=>({__rbx:'C3',r:r||0,g:g||0,b:b||0});
+const col=c=>c&&c.__rbx?`rgba(${Math.round(c.r*255)},${Math.round(c.g*255)},${Math.round(c.b*255)},`:'rgba(255,255,255,';
+let raf=null;function chg(){if(raf)return;raf=requestAnimationFrame(()=>{raf=null;draw()})}
+function roots(){const o=[...svc('CoreGui').ch];const pg=game.Players.LocalPlayer.PlayerGui;if(pg)o.push(...pg.ch);return o.filter(x=>x.cn==='ScreenGui'&&!x.dead)}
+function draw(){vp.innerHTML='';roots().forEach(r=>{const d=b(r);if(d)vp.append(d)});em.style.display=vp.childElementCount?'none':'grid'}
+function b(i){if(!VIS.has(i.cn)||i._p.Visible===false)return null;
+ if(i.cn==='ScreenGui'){const d=document.createElement('div');d.style.cssText='position:absolute;inset:0';i.ch.forEach(c=>{const x=b(c);if(x)d.append(x)});return d}
+ const btn=i.cn==='TextButton',d=document.createElement(btn?'button':'div');
+ d.style.cssText='position:absolute;box-sizing:border-box;display:flex;overflow:hidden;font-family:Inter,system-ui,sans-serif';
+ const p=i.Position,s=i.Size;
+ d.style.left=`calc(${p.xs*100}% + ${p.xo}px)`;d.style.top=`calc(${p.ys*100}% + ${p.yo}px)`;
+ d.style.width=`calc(${s.xs*100}% + ${s.xo}px)`;d.style.height=`calc(${s.ys*100}% + ${s.yo}px)`;
+ d.style.background=col(i.BackgroundColor3)+(1-(i.BackgroundTransparency||0))+')';
+ if(i.BorderSizePixel>0)d.style.border='1px solid #ffffff22';
+ if(i._p.Text!==undefined){d.style.color=col(i.TextColor3)+'1)';d.style.fontSize=(i.TextSize||14)+'px';
+  d.style.justifyContent=({Left:'flex-start',Center:'center',Right:'flex-end'})[i.TextXAlignment]||'center';
+  d.style.alignItems='center';d.innerHTML=esc(i._p.Text||'')}
+ i.ch.forEach(c=>{if(c.cn==='UICorner')d.style.borderRadius=(c.CornerRadius.o||0)+'px';
+  else if(c.cn==='UIStroke')d.style.border=`${c.Thickness||1}px solid ${col(c.Color)}${1-(c.Transparency||0)})`});
+ if(btn){d.style.cursor='pointer';d.onclick=()=>{sig(i).MouseButton1Click.Fire();log('clic '+(i._p.Name||'boton'),'i')}}
+ i.ch.forEach(c=>{if(!['UICorner','UIStroke','UIListLayout','UIPadding'].includes(c.cn)){const x=b(c);if(x)d.append(x)}});
+ return d}
+const TR=s=>{let x=s;
+ x=x.replace(/\blocal\s+([A-Za-z_]\w*)\s*:\s*[A-Za-z_][\w.]*/g,'local $1');
+ x=x.replace(/([A-Za-z_][\w.\[\]]*)\s*(\.\.|\+|-|\*|\/)=/g,'$1 = $1 $2 ');
+ return x};
+function hookF(L){ins+=20000;if(ins>2e6){lua.lua_pushstring(L,lua.to_luastring('bucle sin task.wait(): cortado'));lua.lua_error(L)}}
+function finish(){running=0;st.textContent='terminado'}
+function stop(){clearTimeout(timer);timer=null;co=null;coRef=null;if(running)log('— detenido —','m');finish()}
+function status(){try{lua.lua_getglobal(curL,lua.to_luastring('coroutine'));
+ lua.lua_getfield(curL,-1,lua.to_luastring('status'));lua.lua_remove(curL,-2);
+ lua.lua_rawgeti(curL,lua.LUA_REGISTRYINDEX,coRef);
+ if(lua.lua_pcall(curL,1,1,0)!==lua.LUA_OK){lua.lua_settop(curL,lua.lua_gettop(curL)-1);return'dead'}
+ const s=lua.lua_tojsstring(curL,-1);lua.lua_settop(curL,lua.lua_gettop(curL)-1);return s}catch(e){return'dead'}}
+function resume(){
+ if(!co||!running)return;if(!el.isConnected)return;
+ const L=co;curL=L;let base=0;
+ try{base=lua.lua_gettop(L);if(lua.lua_sethook&&lua.LUA_MASKCOUNT)lua.lua_sethook(L,hookF,lua.LUA_MASKCOUNT,20000);ins=0}catch(e){}
+ try{
+  lua.lua_getglobal(L,lua.to_luastring('coroutine'));
+  lua.lua_getfield(L,-1,lua.to_luastring('resume'));lua.lua_remove(L,-2);
+  lua.lua_rawgeti(L,lua.LUA_REGISTRYINDEX,coRef);
+  const okc=lua.lua_pcall(L,1,lua.LUA_MULTRET,0);
+  try{if(lua.lua_sethook)lua.lua_sethook(L,null,0,0)}catch(e){}
+  if(okc!==lua.LUA_OK){log(lua.lua_tojsstring(L,-1),'e');lua.lua_settop(L,base);return finish()}
+  if(!lua.lua_toboolean(L,base+1)){log(lua.lua_tojsstring(L,base+2),'e');lua.lua_settop(L,base);return finish()}
+  if(status()==='dead'){lua.lua_settop(L,base);return finish()}
+  const w=lua.lua_tonumber(L,base+2)||0;lua.lua_settop(L,base);
+  timer=setTimeout(resume,Math.min(Math.max(w*1000,0),3000))
+ }catch(e){log('error interno: '+e.message,'e');finish()}}
+const FB=['https://cdn.jsdelivr.net/npm/fengari-web@0.1.4/dist/fengari-web.js','https://unpkg.com/fengari-web@0.1.4/dist/fengari-web.js'];
+const load=()=>new Promise((ok,no)=>{let i=0;const nx=()=>{if(window.fengari)return ok();
+ if(i>=FB.length)return no(Error('no cargué el motor Lua (¿bloqueaste el CDN?)'));
+ const s=document.createElement('script');s.src=FB[i++];s.onload=()=>ok();s.onerror=nx;document.head.append(s)};nx()});
+$('#run',el).onclick=async()=>{if(running)stop();const code=cd.value;if(!code.trim())return;
+ log('▶ ejecutando','m');running=1;st.textContent='ejecutando';
+ try{await load()}catch(e){log(e.message,'e');return finish()}
+ lua=window.fengari.lua;lauxlib=window.fengari.lauxlib;
+ const L=lauxlib.luaL_newstate();window.fengari.lualib.luaL_openlibs(L);
+ const G=(n,v)=>{window.fengari.interop.push(L,v);lua.lua_setglobal(L,lua.to_luastring(n))};
+ G('print',L=>{const a=[];for(let i=1;i<=lua.lua_gettop(L);i++)a.push(s2(window.fengari.interop.tojs(L,i)));log(a.join('\t'))});
+ G('warn',L=>{const a=[];for(let i=1;i<=lua.lua_gettop(L);i++)a.push(s2(window.fengari.interop.tojs(L,i)));log(a.join('\t'),'w')});
+ G('typeof',L=>{const v=window.fengari.interop.tojs(L,1);lua.lua_pushstring(L,lua.to_luastring(v&&v.__inst?'Instance':(v&&v.__rbx)||typeof v));return 1});
+ const y=L=>{const n=lua.lua_tonumber(L,1)||0;lua.lua_pushnumber(L,n);return lua.lua_yield(L,1)};
+ G('wait',y);G('task',{wait:y,spawn:(L)=>{lauxlib.lua_pushvalue(L,1);lua.lua_pcall(L,0,0,0);return 0}});
+ G('Instance',{new:ni});
+ G('Color3',{new:C3,fromRGB:(r,g,b)=>C3(r/255,g/255,b/255)});
+ G('UDim2',{new:(a,b,c,d)=>({__rbx:'U2',xs:a,xo:b,ys:c,yo:d}),fromOffset:(x,y)=>({__rbx:'U2',xs:0,xo:x,ys:0,yo:y}),fromScale:(x,y)=>({__rbx:'U2',xs:x,xo:0,ys:y,yo:0})});
+ G('UDim',{new:(s,o)=>({__rbx:'UD',s,o})});
+ G('Enum',new Proxy({},{get:(t,k)=>new Proxy({},{get:(_,n)=>({Name:n})})}));
+ G('game',game);G('identifyexecutor',()=>'Delta');G('getgenv',()=>({}));G('firesignal',(s,...a)=>s&&s.Fire&&s.Fire(...a));
+ G('hookmetamethod',(a,b,c)=>c);G('getgc',()=>({}));
+ const src=TR(code);
+ if(lauxlib.luaL_loadstring(L,lua.to_luastring(src))!==lua.LUA_OK){log(lua.lua_tojsstring(L,-1),'e');return finish()}
+ lua.lua_getglobal(L,lua.to_luastring('coroutine'));lua.lua_getfield(L,-1,lua.to_luastring('create'));lua.lua_remove(L,-2);
+ lauxlib.luaL_loadstring(L,lua.to_luastring(src));
+ if(lua.lua_pcall(L,1,1,0)!==lua.LUA_OK){log(lua.lua_tojsstring(L,-1),'e');return finish()}
+ co=lua.lua_tothread(L,-1);coRef=lauxlib.luaL_ref(L,lua.LUA_REGISTRYINDEX);
+ resume()};
+$('#stop',el).onclick=stop;
+$('#clr',el).onclick=()=>{Object.keys(SV).forEach(k=>delete SV[k]);vp.innerHTML='';em.style.display='grid';log('GUI limpiada','m')};
+$('#ps',el).onchange=e=>{const p=PRE[e.target.value];if(p){cd.value=p.c;e.target.value=''}};
+cd.value=PRE[0].c;log('Lua 5.3 real con API de Roblox simulada','m');
 }
 const luaApp=APPS.find(a=>a.id=='luau');if(luaApp)luaApp.r=luau;
 
-/* Plont como categoría navegable desde el home */
 const cbtn=()=>{const c=$('.cats');if(!c||$('.ct[data-p]'))return;
  const b=document.createElement('button');b.className='ct';b.dataset.p=1;b.textContent='Plont';
- b.onclick=()=>{const v=$('#view');locked()?gate(v):hub(v);$$('.ct').forEach(x=>x.classList.remove('on'));b.classList.add('on');$('#ttl').textContent='Plont'};
+ b.onclick=()=>{const v=$('#view');if(!v)return;(locked()?gate(v):hub(v));$$('.ct').forEach(x=>x.classList.remove('on'));b.classList.add('on');$('#ttl').textContent='Plont'};
  c.append(b)};
-setInterval(cbtn,900);
+setInterval(cbtn,1500);
 })();
-</script></body></html>
+ </script></body></html>
