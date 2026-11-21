@@ -2966,4 +2966,45 @@ input[type=checkbox],input[type=range],input[type=radio]{background:none!importa
 @keyframes rxp{50%{transform:scale(1.6) rotate(-10deg)}}
 .pm{color:var(--mut);font-size:12.5px;margin:4px 0 0}
 </style>
-</body></html>
+<script>
+(function(){
+'use strict';
+if(window.__jbs2) return; window.__jbs2=1;
+var S=[/no puedo/i,/no tengo acceso/i,/no dispongo,/i,/no tengo la capacidad/i,/como modelo/i,/no está disponible/i,/no encontré/i,/no pude/i,/fecha de corte/i,/mi conocimiento llega/i,/desactualizad/i,/no es posible/i,/no se puede/i];
+function sc(t){t=String(t||'').replace(/```[\s\S]*?```/g,' ').trim();if(!t)return 0;var h=t.slice(0,220),n=0;S.forEach(function(r){if(r.test(t))n+=2});S.forEach(function(r){if(r.test(h))n+=3});if(t.length<80)n++;return n}
+var css=document.createElement('style');
+css.textContent='.ma .jbb{font-size:10px;font-weight:700;opacity:.5}.ma:hover .jbb{opacity:1}';
+document.head.appendChild(css);
+function inj(){
+ var ms=document.querySelector('.ai .ms'); if(!ms) return;
+ Array.prototype.forEach.call(ms.querySelectorAll('.ma'),function(a){
+  if(a.dataset.jb) return;
+  var m=a.previousElementSibling;
+  if(!m||!m.classList.contains('a')||sc(m.textContent)<4) return;
+  a.dataset.jb=1;
+  var b=document.createElement('button');
+  b.className='ic jbb'; b.textContent='JB'; b.title='Jailbreak';
+  b.setAttribute('data-jb-btn','1');
+  a.appendChild(b);
+ });
+}
+var raf=null;
+new MutationObserver(function(){if(raf)return;raf=requestAnimationFrame(function(){raf=null;inj()})}).observe(document.body,{childList:true,subtree:true});
+setInterval(inj,2500);
+function enviar(t){
+ var ta=document.querySelector('.ai .bx textarea'), sn=document.querySelector('.ai .bx .sn');
+ if(!ta||!sn) return;
+ var set=Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype,'value').set;
+ set.call(ta,t); ta.dispatchEvent(new Event('input',{bubbles:true})); sn.click();
+}
+document.addEventListener('click',function(e){
+ var x=e.target.closest('[data-jb-btn]'); if(!x) return;
+ e.preventDefault(); e.stopPropagation();
+ var a=x.closest('.ma'), m=a&&a.previousElementSibling; if(!m) return;
+ var prev=m.previousElementSibling;
+ var txt=(prev&&prev.classList.contains('u')?prev.textContent:'')+'\n\n'+m.textContent;
+ window.open('jb.html?q='+encodeURIComponent(txt.slice(0,3000)),'jb','width=520,height=780');
+},true);
+window.addEventListener('message',function(e){ if(e.data&&e.data.t==='jb'&&e.data.v) enviar(e.data.v) });
+})();
+</script></body></html>
